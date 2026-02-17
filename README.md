@@ -1,16 +1,12 @@
 ﻿# DSpico Launcher Theme Converter
-This project is a tool to convert themes to the DSpico Theme format, a open-source launcher for the Nintendo DS.
-
+This project is a tool to convert themes to the DSpico Theme format, a open-source launcher for the Nintendo DS. This tool is still in development and may not work perfectly for all themes.
 
 It allows users to convert themes from other kind of launchers, such as YSMenu, AKMenu, Moonshell and TWiLight Menu++, to the theme for DSpico launcher. 
 
 
-This tool is useful for users who want to use their favorite themes from other launchers on the DSpico Theme. 
-
 However it is important to note that the tool may not be able to convert all themes perfectly, as some themes may have unique features or design elements that may not be compatible with the DSpico Theme format.
 
 
-Please note that this tool is still in development and may not work perfectly for all themes. 
 Some themes may require manual adjustments after conversion to work properly on the DSpico Theme.
 
 
@@ -18,7 +14,8 @@ Also, please note that this tool is not affiliated with the developers of the DS
 It is an independent project created by me, Djinnet, for the purpose of converting themes for the DSpico Launcher.
 
 
-An important note is that the tool will generate metadata info (such as the theme name, the author name, the description, etc.) from the original theme, but it is not guaranteed that all the metadata info will be correct info during the conversion process. 
+# Metadata info:
+The tool will generate metadata info (such as the theme name, the author name, the description, etc.) from the original theme, but it is not guaranteed that all the metadata info will be correct info during the conversion process. 
 
 
 Some themes may have metadata info that is not compatible with the DSpico theme format, and in such cases, the tool may not be able to preserve all the metadata info. 
