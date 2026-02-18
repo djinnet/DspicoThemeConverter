@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include=".github\ISSUE_TEMPLATE\" />
     <Folder Include="GithubImages\" />
     <Folder Include="Tools\" />
   </ItemGroup>
