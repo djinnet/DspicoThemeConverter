@@ -1,7 +1,7 @@
 ﻿# DSpico Launcher Theme Converter
-This project is a tool to convert themes to the DSpico Theme format, a open-source launcher for the Nintendo DS. This tool is still in development and may not work perfectly for all themes.
+This project is a Windows-only supported tool to convert themes to the DSpico Theme format, a open-source launcher for the Nintendo DS. This tool is still in development and may not work perfectly for all themes.
 
-It allows users to convert themes from other kind of launchers, such as YSMenu, AKMenu, Moonshell and TWiLight Menu++, to the theme for DSpico launcher. 
+It allows users to convert themes from various themes launcher to the theme for DSpico launcher. 
 
 
 However it is important to note that the tool may not be able to convert all themes perfectly, as some themes may have unique features or design elements that may not be compatible with the DSpico Theme format.
@@ -29,7 +29,34 @@ However, if you are using metadata.ini file for your themes, the tool will ensur
 Also you can preview the metadata info in the UI of the tool before conversion, so you can customize/overwrite the metadata info for your themes as well.
 
 
+# How to use the program:
+1. First prepare your source theme in term of metadata and theme structure.
+2. Browse in UI after the source theme. Most times the tool will be able to automatically detect the theme type and display it in the UI, but if the tool is not able to detect the theme type, you can manually pick the theme in the UI dropdown.
+3. Review if the UI previewer looks correct. Overwrite the theme metadata if needed.
+4. Browse after an output folder
+5. Press Convert button and review in the log UI if everything went good or bad. 
+6. Review in the output folder if every files has been generated - depending on the source theme - then review the json file if metadata looks correct.
+
+
+# Supported themes:
+The tool is still in development and may not support all themes perfectly, but it should be able to convert themes from the following launchers:
+* YSMenu
+* AKMenu
+* Moonshell
+* TWiLight Menu++
+* DSpico Unexported themes (png files with metadata.ini file)
+
+Other themes may be supported as well, but it is not guaranteed that the tool will be able to convert them perfectly, as some themes may have unique features or design elements that may not be compatible with the DSpico Theme format.
+At that point, it is better to create an issue in the repository for the new theme support, but it is no guarantee that the new theme support will be implemented, as it depends on the complexity of the theme and the time available for development.
+
+
+Some themes may need to manually prepare the source theme before conversion, such as adding a metadata.ini file with the correct metadata info, or adjusting the theme structure to be compatible with the DSpico Theme format.
+
+
 # Images of the program:
+![Image of the program in darkmode](../images/darkmode.png)
+
+![Image of the program in lightmode](../images/lightmode.png)
 
 
 # License:
