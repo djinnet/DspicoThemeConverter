@@ -54,9 +54,9 @@ Some themes may need to manually prepare the source theme before conversion, suc
 
 
 # Images of the program:
-![Image of the program in darkmode](../GithubImages/darkmode.png)
+![Image of the program in darkmode](/GithubImages/darkmode.png)
 
-![Image of the program in lightmode](../GithubImages/lightmode.png)
+![Image of the program in lightmode](/GithubImages/lightmode.png)
 
 
 # License:
