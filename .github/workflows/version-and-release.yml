@@ -27,7 +27,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Zip the Build
-      run: zip -r ${{ secrets.ReleaseZipName }} ./DspicoThemeConverter/bin/Release/net10.0-windows/
+      run: zip -r release.zip ./DspicoThemeConverter/bin/Release/net10.0-windows/
       
     - name: Create Release
       id: create_release
