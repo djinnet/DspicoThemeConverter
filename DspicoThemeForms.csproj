@@ -2,15 +2,17 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-	<Version>0.1.1</Version>
+	<VersionPrefix>0.1.1</VersionPrefix>
+	<Version>$(VersionPrefix).$(Build.BuildId)</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include=".github\ISSUE_TEMPLATE\" />
+    <Folder Include=".github\workflows\" />
     <Folder Include="GithubImages\" />
     <Folder Include="Tools\" />
   </ItemGroup>
@@ -18,7 +20,6 @@
   <ItemGroup>
     <PackageReference Include="EnumStringValues" Version="4.0.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
-    <PackageReference Include="OkieDan.Forms.DarkModeCore" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,4 +27,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+    <ItemGroup>
+	    <Compile Update="\OkieDanDarkMode\FlatComboBox.cs">
+		    <SubType>Component</SubType>
+	    </Compile>
+	    <Compile Update="\OkieDanDarkMode\FlatProgressBar.cs">
+		    <SubType>Component</SubType>
+	    </Compile>
+	    <Compile Update="\OkieDanDarkMode\FlatTabControl.cs">
+		    <SubType>Component</SubType>
+	    </Compile>
+    </ItemGroup>
 </Project>
