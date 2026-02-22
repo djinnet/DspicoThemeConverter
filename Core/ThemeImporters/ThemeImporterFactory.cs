@@ -1,32 +1,38 @@
-﻿using DspicoThemeForms.Core.ThemeImporters.Importers;
+﻿using DspicoThemeForms.Core.Enums;
+using DspicoThemeForms.Core.Exceptions;
+using DspicoThemeForms.Core.ThemeImporters.Importers;
 namespace DspicoThemeForms.Core.ThemeImporters;
+
 public class ThemeImporterFactory
 {
-    public static IThemeImporter? Create(string path, string? themeOverrideType)
+    public static IThemeImporter? Create(string path, EThemeType? themeOverrideType)
     {
-        if (string.IsNullOrEmpty(themeOverrideType))
+        if(string.IsNullOrEmpty(path))
+            throw new ArgumentNullException(nameof(path));
+
+        if (EThemeType.None == themeOverrideType)
         {
             throw new ArgumentException("Theme type must be provided.", nameof(themeOverrideType));
         }
 
-        themeOverrideType ??= "Auto-detect";
+        themeOverrideType ??= EThemeType.Auto_Detect;
 
-        if (themeOverrideType != "Auto-detect")
+        if (themeOverrideType != EThemeType.Auto_Detect)
         {
-            return CreateFromOverride(path, themeOverrideType);
+            return CreateFromOverride(path, (EThemeType)themeOverrideType);
         }
 
         return AutoDetect(path);
     }
 
-    private static IThemeImporter? CreateFromOverride(string folderPath, string type)
+    private static IThemeImporter? CreateFromOverride(string folderPath, EThemeType type)
     {
-        if (type == "Auto-detect")
+        if (type == EThemeType.Auto_Detect)
         {
             throw new ArgumentException("Theme type cannot be 'Auto-detect' when using override.", nameof(type));
         }
 
-        if (type == "DSpico")
+        if (type == EThemeType.DSpico)
         {
             // For DSpico, we only support the source format (png files), not the exported format (bin files)
             if (LooksLikeDSpicoSource(folderPath))
@@ -36,17 +42,17 @@ public class ThemeImporterFactory
 
             if (LooksLikeDSpicoExported(folderPath))
             {
-                throw new Exception("This looks like an exported DSpico theme. We only supported for the DSpico theme source (which means the png files).");
+                throw new DSpicoExportedException();
             }
         }
 
         return type switch
         {
-            "YSMenu" => new YSMenuThemeImporter(),
-            "AKMenu" => new AKMenuThemeImporter(),
-            "Moonshell" => new MoonshellThemeImporter(),
-            "TwiLightMenu" => new TwiLightMenuThemeImporter(),
-            _ => throw new NotSupportedException($"Theme type '{type}' is not supported yet."),
+            EThemeType.YSMenu => new YSMenuThemeImporter(),
+            EThemeType.AKMenu => new AKMenuThemeImporter(),
+            EThemeType.Moonshell => new MoonshellThemeImporter(),
+            EThemeType.TwiLightMenu => new TwiLightMenuThemeImporter(),
+            _ => throw new ThemeTypeNotSupportedException($"Theme type '{type}' is not supported yet.", type),
         };
     }
 
@@ -82,7 +88,7 @@ public class ThemeImporterFactory
             throw new Exception("This looks like an exported DSpico theme. We only supported for the DSpico theme source (which means the png files).");
         }
 
-        throw new NotSupportedException("Could not auto-detect theme type. Please select one manually.");
+        throw new ThemeTypeNotSupportedException("Could not auto-detect theme type. Please select one manually.", EThemeType.Auto_Detect);
     }
 
     private static bool LooksLikeTwiLightMenu(string folderPath)

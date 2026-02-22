@@ -28,10 +28,31 @@ However, if you are using metadata.ini file for your themes, the tool will ensur
 
 Also you can preview the metadata info in the UI of the tool before conversion, so you can customize/overwrite the metadata info for your themes as well.
 
+The metadata.ini file should be placed in the root of the source theme folder, and should be formatted as follows:
+```ini
+[Metadata]
+name = Theme Name
+author = Author Name
+description = Theme Description
+version = 1.0
+darkmode = true
+primarycolor = #FFFFFF
+```
+
+
+| Name         	| Description                                                                                                                                                        	| Optional? 	|
+|--------------	|--------------------------------------------------------------------------------------------------------------------------------------------------------------------	|-----------	|
+| name         	| The name of the theme, which will be displayed in the DSpico Launcher. If not provided, the tool will use the name of the source theme folder as the theme name.   	| Yes       	|
+| author       	| The name of the author of the theme, which will be displayed in the DSpico Launcher. If not provided, the tool will use "Unknown Author" as the author name.       	| Yes       	|
+| description  	| A brief description of the theme, which will be displayed in the DSpico Launcher. If not provided, the tool will use "No description provided" as the description. 	| Yes       	|
+| version      	| The version of the theme, which will be displayed in the UI                                                                                      						| Yes       	|
+| darkmode     	| A boolean value (true or false) indicating whether the theme is a dark mode theme or not. If not provided, the tool assumed it is false (default to light theme)   	| Yes       	|
+| primarycolor 	| The primary color of the theme, which will be used for the UI elements in the DSpico Launcher. It should be in hexadecimal format (e.g., #FFFFFF for white).       	| Yes       	|
+
 
 # How to use the program:
-1. First prepare your source theme in term of metadata and theme structure.
-2. Browse in UI after the source theme. Most times the tool will be able to automatically detect the theme type and display it in the UI, but if the tool is not able to detect the theme type, you can manually pick the theme in the UI dropdown.
+1. First prepare your source theme folder in term of metadata and theme structure.
+2. Browse in UI after the source theme folder. Most of the times the tool will be able to automatically detect the theme type and display it in the UI, but if the tool is not able to detect the theme type, you can manually pick the theme in the UI dropdown.
 3. Review if the UI previewer looks correct. Overwrite the theme metadata if needed.
 4. Browse after an output folder
 5. Press Convert button and review in the log UI if everything went good or bad. 
@@ -40,11 +61,16 @@ Also you can preview the metadata info in the UI of the tool before conversion, 
 
 # Supported themes:
 The tool is still in development and may not support all themes perfectly, but it should be able to convert themes from the following launchers:
-* YSMenu
-* AKMenu
-* Moonshell
-* TWiLight Menu++
-* DSpico Unexported themes (png files with metadata.ini file)
+
+
+|      **Theme names**     	| **Supported Importers** 	| **Supported Metadata** 	| **Supported Exporters** 	|                      **Status**                     	|
+|:------------------------:	|:-----------------------:	|:----------------------:	|:-----------------------:	|:---------------------------------------------------:	|
+| YSMenu                   	|           Yes           	|           No           	|           Yes           	| Needed testing but only top and bottom bg supported 	|
+| AKMenu                   	|           Yes           	|    Yes (custom.ini)    	|           Yes           	| Needed testing but only top and bottom bg supported 	|
+| Moonshell                	|           Yes           	|           No           	|            No           	|                   Work In Progress                  	|
+| TwiLight Menu            	|           Yes           	|           No           	|            No           	|                   Work In Progress                  	|
+| DSpico unexported themes 	|           Yes           	|   Yes (metadata.ini)   	|           Yes           	|   Needed testing, but should supported all images   	|
+
 
 Other themes may be supported as well, but it is not guaranteed that the tool will be able to convert them perfectly, as some themes may have unique features or design elements that may not be compatible with the DSpico Theme format.
 At that point, it is better to create an issue in the repository for the new theme support, but it is no guarantee that the new theme support will be implemented, as it depends on the complexity of the theme and the time available for development.

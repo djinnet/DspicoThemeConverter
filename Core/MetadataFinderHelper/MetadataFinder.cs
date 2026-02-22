@@ -43,6 +43,8 @@ namespace DspicoThemeForms.Core.MetadataFinderHelper
             bool isDarkTheme = false;
             Color primaryColor = Color.White; // Default to white if not specified
             string description = string.Empty;
+            string version = string.Empty;
+            string name = theme.Name;
             try
             {
                 // Extract author's name
@@ -52,6 +54,10 @@ namespace DspicoThemeForms.Core.MetadataFinderHelper
                     int authorEndIndex = metadataContent.IndexOf('\n', authorStartIndex);
                     if (authorEndIndex == -1) authorEndIndex = metadataContent.Length; // Handle case where it's the last line
                     author = metadataContent[authorStartIndex..authorEndIndex].Trim();
+                    if (string.IsNullOrEmpty(author))
+                    {
+                        author = "Unknown Author";
+                    }
                 }
 
                 // Extract theme type (dark or light)
@@ -61,6 +67,9 @@ namespace DspicoThemeForms.Core.MetadataFinderHelper
                     int typeEndIndex = metadataContent.IndexOf('\n', typeStartIndex);
                     if (typeEndIndex == -1) typeEndIndex = metadataContent.Length; // Handle case where it's the last line
                     string themeType = metadataContent[typeStartIndex..typeEndIndex].Trim();
+                    if (string.IsNullOrEmpty(themeType)) {
+                        themeType = "false"; // Default to light theme if not specified
+                    }
                     isDarkTheme = themeType.Equals("true", StringComparison.OrdinalIgnoreCase);
                 }
 
@@ -96,6 +105,24 @@ namespace DspicoThemeForms.Core.MetadataFinderHelper
                     int descEndIndex = metadataContent.IndexOf('\n', descStartIndex);
                     if (descEndIndex == -1) descEndIndex = metadataContent.Length; // Handle case where it's the last line
                     description = metadataContent[descStartIndex..descEndIndex].Trim();
+                    if(string.IsNullOrEmpty(description)) 
+                        description = "No description provided.";
+                }
+
+                if(metadataContent.Contains("version ="))
+                {
+                    int versionStartIndex = metadataContent.IndexOf("version =") + "version =".Length;
+                    int versionEndIndex = metadataContent.IndexOf('\n', versionStartIndex);
+                    if (versionEndIndex == -1) versionEndIndex = metadataContent.Length; // Handle case where it's the last line
+                    version = metadataContent[versionStartIndex..versionEndIndex].Trim();
+                }
+
+                if( metadataContent.Contains("name ="))
+                {
+                    int nameStartIndex = metadataContent.IndexOf("name =") + "name =".Length;
+                    int nameEndIndex = metadataContent.IndexOf('\n', nameStartIndex);
+                    if (nameEndIndex == -1) nameEndIndex = metadataContent.Length; // Handle case where it's the last line
+                    name = metadataContent[nameStartIndex..nameEndIndex].Trim();
                 }
             }
             catch (Exception ex)
@@ -108,6 +135,8 @@ namespace DspicoThemeForms.Core.MetadataFinderHelper
             theme.DarkTheme = isDarkTheme;
             theme.PrimaryColor = primaryColor;
             theme.Description = description;
+            theme.ThemeVersion = version;
+            theme.Name = name;
             return theme;
         }
     }

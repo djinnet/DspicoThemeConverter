@@ -1,9 +1,10 @@
 ﻿using DspicoThemeForms.Core.DspicoExporter;
+using DspicoThemeForms.Core.Enums;
+using DspicoThemeForms.Core.Helper;
 using DspicoThemeForms.Core.ThemeImporters;
 using DspicoThemeForms.Core.ThemeNormalizationLayer;
 using OkieDan.Forms.DarkModeCore;
 using System.Drawing.Drawing2D;
-using System.Windows.Forms;
 
 namespace DspicoThemeForms
 {
@@ -26,6 +27,10 @@ namespace DspicoThemeForms
 
         private void InitializeUIState()
         {
+            //populate the theme type combobox with the available theme types from the EThemeType enum, using the EnumWithName helper to get the display names. However we do not want None to be included in the dropdown, so we will filter it out using a condition in the LINQ query.
+            cmbThemeType.DataSource = EnumWithName<EThemeType>.ParseEnum().ConditionEnum(i => i.Value != EThemeType.None);
+            cmbThemeType.DisplayMember = "Name";
+            cmbThemeType.ValueMember = "Value";
             cmbThemeType.SelectedIndex = 0;
             btnConvert.Enabled = false;
         }
@@ -116,9 +121,30 @@ namespace DspicoThemeForms
 
                 AppendLog("Detecting theme type...");
 
-                IThemeImporter? importer = ThemeImporterFactory.Create(path, cmbThemeType.SelectedItem?.ToString()) ?? throw new Exception("No suitable theme importer found for the selected folder.");
+                EnumWithName<EThemeType>? selectedType = (EnumWithName<EThemeType>?)cmbThemeType.SelectedItem ?? throw new Exception("No theme type selected in the dropdown.");
                 
-                AppendLog($"Found theme type: {importer.Name}");
+                if (selectedType.Value == EThemeType.None)
+                {
+                    throw new Exception("Please select a valid theme type from the dropdown.");
+                }
+
+                if(selectedType.Value == EThemeType.Auto_Detect)
+                {
+                    AppendLog("Using Auto-detecting theme type...");
+                }
+                else
+                {
+                    AppendLog($"Using selected theme type: {selectedType.Name}");
+                }
+
+                IThemeImporter? importer = ThemeImporterFactory.Create(path, selectedType.Value) ?? throw new Exception("No suitable theme importer found for the selected folder.");
+
+                AppendLog($"Found theme type from importer: {importer.Name}");
+
+                //update the combobox to show the detected type
+                cmbThemeType.SelectedIndex = cmbThemeType.Items.Cast<EnumWithName<EThemeType>>().ToList().FindIndex(i => i.Value == importer.Name);
+                cmbThemeType.Invalidate();
+
                 _currentTheme = importer.Import(path);
 
                 if (_currentTheme == null)
@@ -144,7 +170,8 @@ namespace DspicoThemeForms
             txtThemeName.Text = theme.Name;
             txtThemeAuthor.Text = theme.Author ?? "Unknown";
             txtThemeDesc.Text = theme.Description ?? "Unknown";
-            txtThemeOrigin.Text = theme.OriginTheme ?? "Unknown";
+            txtThemeOrigin.Text = theme.OriginTheme.ToString() ?? EThemeType.None.ToString();
+            txtVersion.Text = theme.ThemeVersion ?? string.Empty;
             chkDarkTheme.Checked = theme.DarkTheme;
         }
 
@@ -230,8 +257,7 @@ namespace DspicoThemeForms
             UpdateAllowedOverwrite(chkAllowedOverwrite.Checked);
         }
 
-        //have an function to enable or disable the theme metadata overwrite based on the checkbox, and update the current theme's AllowedOverwriteData property accordingly. This will allow users to choose whether they want the converted DSpico theme to use the original theme's name, description, author, and primary color when possible.
-        private void UpdateAllowedOverwrite(bool allowed)
+       private void UpdateAllowedOverwrite(bool allowed)
         {
             if (_currentTheme != null)
             {
@@ -241,11 +267,13 @@ namespace DspicoThemeForms
             txtThemeAuthor.ReadOnly = !allowed;
             txtThemeDesc.ReadOnly = !allowed;
             txtThemeName.ReadOnly = !allowed;
+            txtVersion.ReadOnly = !allowed;
             chkDarkTheme.Enabled = allowed;
 
             txtThemeAuthor.Invalidate();
             txtThemeDesc.Invalidate();
             txtThemeName.Invalidate();
+            txtVersion.Invalidate();
             chkDarkTheme.Invalidate();
         }
 

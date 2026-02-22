@@ -56,8 +56,10 @@ namespace DspicoThemeForms
             picScrim = new PictureBox();
             txtLog = new TextBox();
             groupBoxTheme = new GroupBox();
+            lblVersion = new Label();
+            txtVersion = new TextBox();
             chkDarkTheme = new CheckBox();
-            label1 = new Label();
+            lblDarkTheme = new Label();
             lblThemeName = new Label();
             txtThemeName = new TextBox();
             lblThemeDesc = new Label();
@@ -149,7 +151,6 @@ namespace DspicoThemeForms
             // 
             cmbThemeType.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbThemeType.FormattingEnabled = true;
-            cmbThemeType.Items.AddRange(new object[] { "Auto-detect", "YSMenu", "Moonshell", "AKMenu", "TwiLightMenu", "DSpico" });
             cmbThemeType.Location = new Point(12, 138);
             cmbThemeType.Name = "cmbThemeType";
             cmbThemeType.Size = new Size(200, 23);
@@ -183,7 +184,7 @@ namespace DspicoThemeForms
             tabPreview.SelectedIndex = 0;
             tabPreview.SelectTabColor = SystemColors.ControlLight;
             tabPreview.ShowTabCloseButton = false;
-            tabPreview.Size = new Size(725, 260);
+            tabPreview.Size = new Size(725, 282);
             tabPreview.SizeMode = TabSizeMode.Fixed;
             tabPreview.TabCloseColor = SystemColors.ControlText;
             tabPreview.TabColor = SystemColors.ControlLight;
@@ -195,7 +196,7 @@ namespace DspicoThemeForms
             tabTop.Controls.Add(picTop);
             tabTop.Location = new Point(4, 28);
             tabTop.Name = "tabTop";
-            tabTop.Size = new Size(717, 228);
+            tabTop.Size = new Size(717, 250);
             tabTop.TabIndex = 0;
             tabTop.Text = "Top screen";
             // 
@@ -204,7 +205,7 @@ namespace DspicoThemeForms
             picTop.Dock = DockStyle.Fill;
             picTop.Location = new Point(0, 0);
             picTop.Name = "picTop";
-            picTop.Size = new Size(717, 228);
+            picTop.Size = new Size(717, 250);
             picTop.TabIndex = 0;
             picTop.TabStop = false;
             picTop.Paint += Picturebox_Paint;
@@ -215,7 +216,7 @@ namespace DspicoThemeForms
             tabBottom.Controls.Add(picBottom);
             tabBottom.Location = new Point(4, 28);
             tabBottom.Name = "tabBottom";
-            tabBottom.Size = new Size(717, 228);
+            tabBottom.Size = new Size(717, 250);
             tabBottom.TabIndex = 1;
             tabBottom.Text = "Bottom screen";
             // 
@@ -224,7 +225,7 @@ namespace DspicoThemeForms
             picBottom.Dock = DockStyle.Fill;
             picBottom.Location = new Point(0, 0);
             picBottom.Name = "picBottom";
-            picBottom.Size = new Size(717, 228);
+            picBottom.Size = new Size(717, 250);
             picBottom.TabIndex = 0;
             picBottom.TabStop = false;
             picBottom.Paint += Picturebox_Paint;
@@ -235,7 +236,7 @@ namespace DspicoThemeForms
             tabGrid.Controls.Add(picGrid);
             tabGrid.Location = new Point(4, 28);
             tabGrid.Name = "tabGrid";
-            tabGrid.Size = new Size(717, 228);
+            tabGrid.Size = new Size(717, 250);
             tabGrid.TabIndex = 2;
             tabGrid.Text = "Grid cell";
             // 
@@ -244,7 +245,7 @@ namespace DspicoThemeForms
             picGrid.Dock = DockStyle.Fill;
             picGrid.Location = new Point(0, 0);
             picGrid.Name = "picGrid";
-            picGrid.Size = new Size(717, 228);
+            picGrid.Size = new Size(717, 250);
             picGrid.TabIndex = 0;
             picGrid.TabStop = false;
             picGrid.Paint += Picturebox_Paint;
@@ -255,7 +256,7 @@ namespace DspicoThemeForms
             tabGridSelected.Controls.Add(picGridSelected);
             tabGridSelected.Location = new Point(4, 28);
             tabGridSelected.Name = "tabGridSelected";
-            tabGridSelected.Size = new Size(717, 228);
+            tabGridSelected.Size = new Size(717, 250);
             tabGridSelected.TabIndex = 5;
             tabGridSelected.Text = "Grid cell Select";
             // 
@@ -264,7 +265,7 @@ namespace DspicoThemeForms
             picGridSelected.Dock = DockStyle.Fill;
             picGridSelected.Location = new Point(0, 0);
             picGridSelected.Name = "picGridSelected";
-            picGridSelected.Size = new Size(717, 228);
+            picGridSelected.Size = new Size(717, 250);
             picGridSelected.TabIndex = 0;
             picGridSelected.TabStop = false;
             picGridSelected.Paint += Picturebox_Paint;
@@ -275,7 +276,7 @@ namespace DspicoThemeForms
             tabBanner.Controls.Add(picBanner);
             tabBanner.Location = new Point(4, 28);
             tabBanner.Name = "tabBanner";
-            tabBanner.Size = new Size(717, 228);
+            tabBanner.Size = new Size(717, 250);
             tabBanner.TabIndex = 3;
             tabBanner.Text = "Banner cell";
             // 
@@ -284,7 +285,7 @@ namespace DspicoThemeForms
             picBanner.Dock = DockStyle.Fill;
             picBanner.Location = new Point(0, 0);
             picBanner.Name = "picBanner";
-            picBanner.Size = new Size(717, 228);
+            picBanner.Size = new Size(717, 250);
             picBanner.TabIndex = 0;
             picBanner.TabStop = false;
             picBanner.Paint += Picturebox_Paint;
@@ -296,7 +297,7 @@ namespace DspicoThemeForms
             tabBannerSelected.Font = new Font("Segoe UI", 9F);
             tabBannerSelected.Location = new Point(4, 28);
             tabBannerSelected.Name = "tabBannerSelected";
-            tabBannerSelected.Size = new Size(717, 228);
+            tabBannerSelected.Size = new Size(717, 250);
             tabBannerSelected.TabIndex = 6;
             tabBannerSelected.Text = "Banner cell Select";
             // 
@@ -305,7 +306,7 @@ namespace DspicoThemeForms
             picBannerSelected.Dock = DockStyle.Fill;
             picBannerSelected.Location = new Point(0, 0);
             picBannerSelected.Name = "picBannerSelected";
-            picBannerSelected.Size = new Size(717, 228);
+            picBannerSelected.Size = new Size(717, 250);
             picBannerSelected.TabIndex = 0;
             picBannerSelected.TabStop = false;
             picBannerSelected.Paint += Picturebox_Paint;
@@ -316,7 +317,7 @@ namespace DspicoThemeForms
             tabScrim.Controls.Add(picScrim);
             tabScrim.Location = new Point(4, 28);
             tabScrim.Name = "tabScrim";
-            tabScrim.Size = new Size(717, 228);
+            tabScrim.Size = new Size(717, 250);
             tabScrim.TabIndex = 4;
             tabScrim.Text = "Scrim";
             // 
@@ -325,25 +326,27 @@ namespace DspicoThemeForms
             picScrim.Dock = DockStyle.Fill;
             picScrim.Location = new Point(0, 0);
             picScrim.Name = "picScrim";
-            picScrim.Size = new Size(717, 228);
+            picScrim.Size = new Size(717, 250);
             picScrim.TabIndex = 0;
             picScrim.TabStop = false;
             picScrim.Paint += Picturebox_Paint;
             // 
             // txtLog
             // 
-            txtLog.Location = new Point(12, 450);
+            txtLog.Location = new Point(12, 468);
             txtLog.Multiline = true;
             txtLog.Name = "txtLog";
             txtLog.ReadOnly = true;
             txtLog.ScrollBars = ScrollBars.Vertical;
-            txtLog.Size = new Size(933, 120);
+            txtLog.Size = new Size(933, 151);
             txtLog.TabIndex = 10;
             // 
             // groupBoxTheme
             // 
+            groupBoxTheme.Controls.Add(lblVersion);
+            groupBoxTheme.Controls.Add(txtVersion);
             groupBoxTheme.Controls.Add(chkDarkTheme);
-            groupBoxTheme.Controls.Add(label1);
+            groupBoxTheme.Controls.Add(lblDarkTheme);
             groupBoxTheme.Controls.Add(lblThemeName);
             groupBoxTheme.Controls.Add(txtThemeName);
             groupBoxTheme.Controls.Add(lblThemeDesc);
@@ -354,30 +357,47 @@ namespace DspicoThemeForms
             groupBoxTheme.Controls.Add(txtThemeOrigin);
             groupBoxTheme.Location = new Point(743, 184);
             groupBoxTheme.Name = "groupBoxTheme";
-            groupBoxTheme.Size = new Size(200, 256);
+            groupBoxTheme.Size = new Size(200, 278);
             groupBoxTheme.TabIndex = 11;
             groupBoxTheme.TabStop = false;
             groupBoxTheme.Text = "Theme metadata";
+            // 
+            // lblVersion
+            // 
+            lblVersion.AutoSize = true;
+            lblVersion.Location = new Point(6, 195);
+            lblVersion.Name = "lblVersion";
+            lblVersion.Size = new Size(116, 15);
+            lblVersion.TabIndex = 11;
+            lblVersion.Text = "Version of the theme";
+            // 
+            // txtVersion
+            // 
+            txtVersion.Location = new Point(6, 213);
+            txtVersion.Name = "txtVersion";
+            txtVersion.ReadOnly = true;
+            txtVersion.Size = new Size(188, 23);
+            txtVersion.TabIndex = 10;
             // 
             // chkDarkTheme
             // 
             chkDarkTheme.AutoSize = true;
             chkDarkTheme.Enabled = false;
-            chkDarkTheme.Location = new Point(6, 213);
+            chkDarkTheme.Location = new Point(6, 257);
             chkDarkTheme.Name = "chkDarkTheme";
             chkDarkTheme.Size = new Size(156, 19);
             chkDarkTheme.TabIndex = 9;
             chkDarkTheme.Text = "Is the theme dark mode?";
             chkDarkTheme.UseVisualStyleBackColor = true;
             // 
-            // label1
+            // lblDarkTheme
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(6, 195);
-            label1.Name = "label1";
-            label1.Size = new Size(71, 15);
-            label1.TabIndex = 8;
-            label1.Text = "Dark Theme";
+            lblDarkTheme.AutoSize = true;
+            lblDarkTheme.Location = new Point(6, 239);
+            lblDarkTheme.Name = "lblDarkTheme";
+            lblDarkTheme.Size = new Size(71, 15);
+            lblDarkTheme.TabIndex = 8;
+            lblDarkTheme.Text = "Dark Theme";
             // 
             // lblThemeName
             // 
@@ -473,7 +493,7 @@ namespace DspicoThemeForms
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(954, 585);
+            ClientSize = new Size(954, 631);
             Controls.Add(chkDarkMode);
             Controls.Add(chkAllowedOverwrite);
             Controls.Add(lblSource);
@@ -555,9 +575,11 @@ namespace DspicoThemeForms
         private TextBox txtThemeAuthor;
         private Label lblThemeOrigin;
         private CheckBox chkDarkTheme;
-        private Label label1;
+        private Label lblDarkTheme;
         private TextBox txtThemeOrigin;
         private CheckBox chkAllowedOverwrite;
         private CheckBox chkDarkMode;
+        private Label lblVersion;
+        private TextBox txtVersion;
     }
 }

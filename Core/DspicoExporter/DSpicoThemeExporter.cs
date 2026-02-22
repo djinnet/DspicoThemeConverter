@@ -4,6 +4,7 @@ using DspicoThemeForms.Core.ThemeNormalizationLayer;
 using System.Drawing.Imaging;
 
 namespace DspicoThemeForms.Core.DspicoExporter;
+
 public sealed class DSpicoThemeExporter
 {
     private readonly PtexConvRunner _ptexConvRunner;
@@ -232,10 +233,10 @@ public sealed class DSpicoThemeExporter
     private string CreateThemeFolderAtDest(NormalizedTheme theme)
     {
         _log("Creating theme folder...");
-        if (string.IsNullOrEmpty(theme.OriginTheme))
+        if (theme.OriginTheme == null)
         {
-            _log("Warning: Origin theme is null or empty. Using 'Unknown' as origin theme.");
-            theme.OriginTheme = "Unknown";
+            _log("Warning: Origin theme is null or empty. Using 'None' as origin theme.");
+            theme.OriginTheme = Enums.EThemeType.None;
         }
 
         if (string.IsNullOrEmpty(theme.Name))

@@ -1,11 +1,12 @@
-﻿using DspicoThemeForms.Core.Helper;
+﻿using DspicoThemeForms.Core.Enums;
+using DspicoThemeForms.Core.Helper;
 using DspicoThemeForms.Core.ThemeNormalizationLayer;
 
 namespace DspicoThemeForms.Core.ThemeImporters.Importers;
 
 public class YSMenuThemeImporter : IThemeImporter
 {
-    public string Name => "YSMenu";
+    public EThemeType Name => EThemeType.YSMenu;
     public NormalizedTheme? Import(string Folderpath)
     {
         try

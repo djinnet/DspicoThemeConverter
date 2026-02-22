@@ -1,11 +1,12 @@
-﻿using DspicoThemeForms.Core.Helper;
+﻿using DspicoThemeForms.Core.Enums;
+using DspicoThemeForms.Core.Helper;
 using DspicoThemeForms.Core.ThemeNormalizationLayer;
 
 namespace DspicoThemeForms.Core.ThemeImporters.Importers;
 
 public class AKMenuThemeImporter : IThemeImporter
 {
-    public string Name => "AKMenu";
+    public EThemeType Name => EThemeType.AKMenu;
 
     public NormalizedTheme? Import(string Folderpath)
     {

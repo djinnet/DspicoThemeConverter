@@ -1,11 +1,12 @@
-﻿using DspicoThemeForms.Core.Helper;
+﻿using DspicoThemeForms.Core.Enums;
+using DspicoThemeForms.Core.Helper;
 using DspicoThemeForms.Core.ThemeNormalizationLayer;
 
 namespace DspicoThemeForms.Core.ThemeImporters.Importers;
 
 public class DSpicoThemeImporter : IThemeImporter
 {
-    public string Name => "DSpico";
+    public EThemeType Name => EThemeType.DSpico;
     public NormalizedTheme? Import(string Folderpath)
     {
         try

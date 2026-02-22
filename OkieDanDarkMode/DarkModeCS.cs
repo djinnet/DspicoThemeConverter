@@ -1,15 +1,9 @@
 ﻿using Microsoft.Win32;
-using System.Drawing;
-using System;
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
-using System.Diagnostics;
-using System.Xml.Linq;
 
 
 namespace OkieDan.Forms.DarkModeCore;

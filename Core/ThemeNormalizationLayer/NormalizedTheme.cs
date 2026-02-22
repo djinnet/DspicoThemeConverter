@@ -1,11 +1,15 @@
-﻿namespace DspicoThemeForms.Core.ThemeNormalizationLayer;
+﻿using DspicoThemeForms.Core.Enums;
+
+namespace DspicoThemeForms.Core.ThemeNormalizationLayer;
 
 public sealed class NormalizedTheme
 {
     public required string Name { get; set; }
     public string? Description { get; set; } = string.Empty;
     public string? Author { get; set; } = "Unknown Author";
-    public string? OriginTheme { get; set; } = "Unknown Origin"; // Optional: which theme this was normalized from, if any
+    public EThemeType? OriginTheme { get; set; } = EThemeType.None; // Optional: which theme this was normalized from, if any
+
+    public string? ThemeVersion { get; set; } = null; // Optional: version of the theme, if specified in metadata
 
     public Color PrimaryColor { get; set; } = Color.White; // Default to white if not specified
     public bool DarkTheme { get; set; } = false;
@@ -30,5 +34,7 @@ public sealed class NormalizedTheme
 
     public Bitmap? Scrim { get; set; } = null; // 8x42 A5I3 8 color palette scrim.bin
     public Bitmap? ScrimPltt { get; set; } = null; // 8x42 A5I3 8 color palette scrim_pltt.bin
+
+    public List<BackgroundMusicTheme> BackgroundMusicThemes { get; set; } = []; // List of background music themes, can be empty if no music themes are included
 }
 
