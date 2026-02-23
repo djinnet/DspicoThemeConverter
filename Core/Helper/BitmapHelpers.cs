@@ -1,46 +1,47 @@
 ﻿using System.Drawing.Imaging;
 
-namespace DspicoThemeForms.Core.Helper
+namespace DspicoThemeForms.Core.Helper;
+
+public class BitmapHelpers
 {
-    public class BitmapHelpers
+    public static Bitmap Prepare(Bitmap src, int w, int h)
     {
-        public static Bitmap Prepare(Bitmap src, int w, int h)
-        {
-            var bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
-            using var g = Graphics.FromImage(bmp);
-            g.Clear(Color.Transparent);
-            g.DrawImage(src, 0, 0, w, h);
-            return bmp;
-        }
+        var bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+        using var g = Graphics.FromImage(bmp);
+        g.Clear(Color.Transparent);
+        g.DrawImage(src, 0, 0, w, h);
+        return bmp;
+    }
 
-        public static Bitmap LoadBitmap(string path)
-        {
-            // Avoid locking the file on disk
-            using var temp = new Bitmap(path);
-            return new Bitmap(temp);
-        }
+    public static Bitmap LoadBitmap(string path)
+    {
+        // Avoid locking the file on disk
+        using var temp = new Bitmap(path);
+        return new Bitmap(temp);
+    }
 
-        public static void ValidateResolution(Bitmap bmp, int width, int height, string name)
+    public static void ValidateResolution(Bitmap bmp, int width, int height, string name)
+    {
+        if (bmp.Width != width || bmp.Height != height)
         {
-            if (bmp.Width != width || bmp.Height != height)
-            {
-                throw new InvalidOperationException($"{name} must be {width}x{height}, but was {bmp.Width}x{bmp.Height}");
-            }
+            throw new InvalidOperationException($"{name} must be {width}x{height}, but was {bmp.Width}x{bmp.Height}");
         }
+    }
 
-        public static bool IsDarkTheme(Bitmap bmp)
-        {
-            // Very naive for now; good enough
-            var avg = ExtractPrimaryColor(bmp);
-            return (avg.R + avg.G + avg.B) < (128 * 3);
-        }
+    public static bool IsDarkTheme(Bitmap bmp)
+    {
+        // Very naive for now; good enough
+        Color avg = ExtractPrimaryColor(bmp);
 
-        public static Color ExtractPrimaryColor(Bitmap bmp)
-        {
-            // keep it simple
-            var x = bmp.Width / 2;
-            var y = bmp.Height / 2;
-            return bmp.GetPixel(x, y);
-        }
+        // If the average color is darker than mid-gray, consider it a dark theme
+        return (avg.R + avg.G + avg.B) < (128 * 3);
+    }
+
+    public static Color ExtractPrimaryColor(Bitmap bmp)
+    {
+        // keep it simple
+        int x = bmp.Width / 2;
+        int y = bmp.Height / 2;
+        return bmp.GetPixel(x, y);
     }
 }

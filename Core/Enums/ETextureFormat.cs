@@ -1,6 +1,6 @@
 ﻿using EnumStringValues;
 
-namespace DspicoThemeForms.Core.Runners;
+namespace DspicoThemeForms.Core.Enums;
 
 public enum ETextureFormat : int
 {

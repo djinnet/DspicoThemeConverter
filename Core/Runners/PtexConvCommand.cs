@@ -1,10 +1,11 @@
-﻿using EnumStringValues;
+﻿using DspicoThemeForms.Core.Constants;
+using DspicoThemeForms.Core.Enums;
+using EnumStringValues;
 
 namespace DspicoThemeForms.Core.Runners;
 
 public sealed class PtexConvCommand
 {
-    public string ptexconvExeName { get; set; } = "ptexconv.exe";
     public bool IsTexture { get; set; } = false; // -gt for textures, -gb for bitmaps
     public string InputImage { get; set; } = string.Empty;
     public string OutputBaseName { get; set; } = string.Empty;
@@ -18,16 +19,20 @@ public sealed class PtexConvCommand
     public override string ToString()
     {
         if (string.IsNullOrWhiteSpace(InputImage))
+        {
             throw new InvalidOperationException("InputImage not set");
+        }
 
         if (string.IsNullOrWhiteSpace(OutputBaseName))
-            throw new InvalidOperationException("OutputBaseName not set");
-
-        var args = new List<string>
         {
-            ptexconvExeName,
+            throw new InvalidOperationException("OutputBaseName not set");
+        }
+
+        List<string> args =
+        [
+            FilesContants.PtexConvExeName,
             InputImage
-        };
+        ];
 
         if (IsTexture)
         {

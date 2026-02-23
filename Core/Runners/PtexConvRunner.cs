@@ -1,4 +1,5 @@
-﻿using DspicoThemeForms.Core.Helper;
+﻿using DspicoThemeForms.Core.Constants;
+using DspicoThemeForms.Core.Helper;
 using System.Diagnostics;
 
 namespace DspicoThemeForms.Core.Runners;
@@ -22,11 +23,24 @@ public sealed class PtexConvRunner
         bool HasError = false;
         try
         {
-            Log("Running ptexconv with arguments: " + arguments);
-            var psi = new ProcessStartInfo
+            if (string.IsNullOrEmpty(arguments))
             {
-                FileName = "cmd.exe",
-                WorkingDirectory = PathHelper.GetToolsDirectory(),
+                Log("No arguments provided for ptexconv.");
+                return false;
+            }
+
+            string toolsDir = PathHelper.GetToolsDirectory();
+            if (string.IsNullOrEmpty(toolsDir))
+            {
+                Log("Tools directory not found.");
+                return false;
+            }
+
+            Log("Running ptexconv with arguments: " + arguments);
+            ProcessStartInfo psi = new()
+            {
+                FileName = FilesContants.CmdExeName,
+                WorkingDirectory = toolsDir,
                 Arguments = $"/c {PtexConvPath} {arguments}",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -67,7 +81,7 @@ public sealed class PtexConvRunner
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error running ptexconv: {ex.Message}");
+            Log("Exception while running ptexconv: " + ex.Message);
             return false;
         }
     }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DspicoThemeForms.Core.Exceptions;
+﻿namespace DspicoThemeForms.Core.Exceptions;
 
 public class DSpicoExportedException : Exception
 {

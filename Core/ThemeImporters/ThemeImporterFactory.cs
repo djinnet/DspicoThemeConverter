@@ -7,7 +7,7 @@ public class ThemeImporterFactory
 {
     public static IThemeImporter? Create(string path, EThemeType? themeOverrideType)
     {
-        if(string.IsNullOrEmpty(path))
+        if (string.IsNullOrEmpty(path))
             throw new ArgumentNullException(nameof(path));
 
         if (EThemeType.None == themeOverrideType)

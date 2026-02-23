@@ -1,4 +1,6 @@
-﻿using DspicoThemeForms.Core.Helper;
+﻿using DspicoThemeForms.Core.Constants;
+using DspicoThemeForms.Core.Enums;
+using DspicoThemeForms.Core.Helper;
 using DspicoThemeForms.Core.Runners;
 using DspicoThemeForms.Core.ThemeNormalizationLayer;
 using System.Drawing.Imaging;
@@ -33,7 +35,19 @@ public sealed class DSpicoThemeExporter
                 return;
             }
 
+            if (string.IsNullOrEmpty(_outputPath))
+            {
+                _log("Error: Output path is null or empty.");
+                return;
+            }
+
             string themeFolderPath = CreateThemeFolderAtDest(theme);
+
+            if (string.IsNullOrEmpty(themeFolderPath))
+            {
+                _log("Error: Failed to create theme folder at destination.");
+                return;
+            }
 
             CreateThemeJson(theme, themeFolderPath);
 
@@ -58,19 +72,19 @@ public sealed class DSpicoThemeExporter
         }
         finally
         {
-            var result = RemovedTempFile(["topbg", "bottombg"]);
+            bool result = RemovedTempFile(["topbg", "bottombg", "bannerListCell", "bannerListCellSelected", "gridCell", "gridCellSelected", "scrim"]);
             if (!result)
             {
                 _log("Failed to remove temporary files: topbg.png, bottombg.png");
             }
 
-            var moved = MoveTexFiles(theme);
+            bool moved = MoveTexFiles(theme);
             if (!moved)
             {
                 _log("Failed to move tex files");
             }
 
-            var movedPal = MovePalFiles(theme);
+            bool movedPal = MovePalFiles(theme);
             if (!movedPal)
             {
                 _log("Failed to move pal files");
@@ -109,7 +123,7 @@ public sealed class DSpicoThemeExporter
             if (theme.TopBackground != null)
             {
                 _log("Saving top background...");
-                var topBgPath = SaveTempPng(theme.TopBackground, "topbg");
+                string topBgPath = SaveTempPng(theme.TopBackground, "topbg");
                 PtexConvCommand TopBGcommand = new()
                 {
                     InputImage = "topbg.png",
@@ -118,14 +132,14 @@ public sealed class DSpicoThemeExporter
                     TextureFormat = ETextureFormat.Direct,
                 };
                 _log("Running ptexconv on top background...");
-                var topresult = _ptexConvRunner.Run(TopBGcommand.ToString());
+                bool topresult = _ptexConvRunner.Run(TopBGcommand.ToString());
                 result.HasRunTopBackground = topresult;
             }
 
             if (theme.BottomBackground != null)
             {
                 _log("Saving bottom background...");
-                var bottomBgPath = SaveTempPng(theme.BottomBackground, "bottombg");
+                string bottomBgPath = SaveTempPng(theme.BottomBackground, "bottombg");
                 PtexConvCommand BottomBGcommand = new()
                 {
                     InputImage = "bottombg.png",
@@ -134,14 +148,14 @@ public sealed class DSpicoThemeExporter
                     TextureFormat = ETextureFormat.Direct,
                 };
                 _log("Running ptexconv on bottom background...");
-                var bottomresult = _ptexConvRunner.Run(BottomBGcommand.ToString());
+                bool bottomresult = _ptexConvRunner.Run(BottomBGcommand.ToString());
                 result.HasRunBottomBackground = bottomresult;
             }
 
             if (theme.BannerListCell != null)
             {
                 _log("Saving banner list cell...");
-                var bannerListCellPath = SaveTempPng(theme.BannerListCell, "bannerListCell");
+                string bannerListCellPath = SaveTempPng(theme.BannerListCell, "bannerListCell");
                 PtexConvCommand BannerListCellCommand = new()
                 {
                     InputImage = "bannerListCell.png",
@@ -150,14 +164,14 @@ public sealed class DSpicoThemeExporter
                     TextureFormat = ETextureFormat.A3I5,
                 };
                 _log("Running ptexconv on banner list cell...");
-                var bannerListCellResult = _ptexConvRunner.Run(BannerListCellCommand.ToString());
+                bool bannerListCellResult = _ptexConvRunner.Run(BannerListCellCommand.ToString());
                 result.HasRunBannerListCell = bannerListCellResult;
             }
 
             if (theme.BannerListCellSelected != null)
             {
                 _log("Saving banner list cell selected...");
-                var bannerListCellSelectedPath = SaveTempPng(theme.BannerListCellSelected, "bannerListCellSelected");
+                string bannerListCellSelectedPath = SaveTempPng(theme.BannerListCellSelected, "bannerListCellSelected");
                 PtexConvCommand BannerListCellSelectedCommand = new()
                 {
                     InputImage = "bannerListCellSelected.png",
@@ -166,7 +180,7 @@ public sealed class DSpicoThemeExporter
                     TextureFormat = ETextureFormat.A3I5,
                 };
                 _log("Running ptexconv on banner list cell selected...");
-                var bannerListCellSelectedResult = _ptexConvRunner.Run(BannerListCellSelectedCommand.ToString());
+                bool bannerListCellSelectedResult = _ptexConvRunner.Run(BannerListCellSelectedCommand.ToString());
                 result.HasRunBannerListCellSelected = bannerListCellSelectedResult;
             }
 
@@ -174,7 +188,7 @@ public sealed class DSpicoThemeExporter
             if (theme.GridCell != null)
             {
                 _log("Saving grid cell...");
-                var gridCellPath = SaveTempPng(theme.GridCell, "gridCell");
+                string gridCellPath = SaveTempPng(theme.GridCell, "gridCell");
                 PtexConvCommand GridCellCommand = new()
                 {
                     InputImage = "gridCell.png",
@@ -183,14 +197,14 @@ public sealed class DSpicoThemeExporter
                     TextureFormat = ETextureFormat.A3I5,
                 };
                 _log("Running ptexconv on grid cell...");
-                var gridCellResult = _ptexConvRunner.Run(GridCellCommand.ToString());
+                bool gridCellResult = _ptexConvRunner.Run(GridCellCommand.ToString());
                 result.HasRunGridCell = gridCellResult;
             }
 
             if (theme.GridCellSelected != null)
             {
                 _log("Saving grid cell selected...");
-                var gridCellSelectedPath = SaveTempPng(theme.GridCellSelected, "gridCellSelected");
+                string gridCellSelectedPath = SaveTempPng(theme.GridCellSelected, "gridCellSelected");
                 PtexConvCommand GridCellSelectedCommand = new()
                 {
                     InputImage = "gridCellSelected.png",
@@ -199,14 +213,14 @@ public sealed class DSpicoThemeExporter
                     TextureFormat = ETextureFormat.A3I5,
                 };
                 _log("Running ptexconv on grid cell selected...");
-                var gridCellSelectedResult = _ptexConvRunner.Run(GridCellSelectedCommand.ToString());
+                bool gridCellSelectedResult = _ptexConvRunner.Run(GridCellSelectedCommand.ToString());
                 result.HasRunGridCellSelected = gridCellSelectedResult;
             }
 
             if (theme.Scrim != null)
             {
                 _log("Saving scrim...");
-                var scrimPath = SaveTempPng(theme.Scrim, "scrim");
+                string scrimPath = SaveTempPng(theme.Scrim, "scrim");
                 PtexConvCommand ScrimCommand = new()
                 {
                     InputImage = "scrim.png",
@@ -215,12 +229,9 @@ public sealed class DSpicoThemeExporter
                     TextureFormat = ETextureFormat.A5I3,
                 };
                 _log("Running ptexconv on scrim...");
-                var scrimResult = _ptexConvRunner.Run(ScrimCommand.ToString());
+                bool scrimResult = _ptexConvRunner.Run(ScrimCommand.ToString());
                 result.HasRunScrim = scrimResult;
             }
-
-
-
             return (flowControl: true, value: result);
         }
         catch (Exception ex)
@@ -232,43 +243,69 @@ public sealed class DSpicoThemeExporter
 
     private string CreateThemeFolderAtDest(NormalizedTheme theme)
     {
-        _log("Creating theme folder...");
-        if (theme.OriginTheme == null)
+        try
         {
-            _log("Warning: Origin theme is null or empty. Using 'None' as origin theme.");
-            theme.OriginTheme = Enums.EThemeType.None;
-        }
+            _log("Creating theme folder...");
+            if (theme.OriginTheme == null)
+            {
+                _log("Warning: Origin theme is null or empty. Using 'None' as origin theme.");
+                theme.OriginTheme = Enums.EThemeType.None;
+            }
 
-        if (string.IsNullOrEmpty(theme.Name))
-        {
-            _log("Warning: Theme name is null or empty. Using 'Unnamed' as theme name.");
-            theme.Name = "Unnamed";
+            if (string.IsNullOrEmpty(theme.Name))
+            {
+                _log("Warning: Theme name is null or empty. Using 'Unnamed' as theme name.");
+                theme.Name = "Unnamed";
+            }
+            string themeFolderPath = Path.Combine(_outputPath, theme.OriginTheme + "_" + theme.Name);
+            if (!Directory.Exists(themeFolderPath))
+            {
+                _log($"Theme folder does not exist. Creating new folder at: {themeFolderPath}");
+            }
+            else
+            {
+                _log($"Theme folder already exists at: {themeFolderPath}. It will be overwritten.");
+            }
+            Directory.CreateDirectory(themeFolderPath);
+            return themeFolderPath;
         }
-        var themeFolderPath = Path.Combine(_outputPath, theme.OriginTheme + "_" + theme.Name);
-        Directory.CreateDirectory(themeFolderPath);
-        return themeFolderPath;
+        catch (Exception ex)
+        {
+            _log($"Error creating theme folder at destination: {ex.Message}");
+            return string.Empty;
+        }
     }
 
     private void CreateThemeJson(NormalizedTheme theme, string themeFolderPath)
     {
-        _log("Writing theme.json...");
-        var themeJsonPath = Path.Combine(themeFolderPath, "theme.json");
-
-        var themeJsonContent = System.Text.Json.JsonSerializer.Serialize(new DSpicoThemeJson
+        try
         {
-            Name = theme.Name,
-            Description = theme.Description,
-            Author = theme.Author,
-            PrimaryColor = new PrimaryColor
+            _log("Writing theme.json...");
+            string themeJsonPath = Path.Combine(themeFolderPath, FilesContants.ThemeJsonFileName);
+
+            DSpicoThemeJson json = new()
             {
-                R = theme.PrimaryColor.R,
-                G = theme.PrimaryColor.G,
-                B = theme.PrimaryColor.B
-            },
-            DarkTheme = theme.DarkTheme,
-            Type = "Custom"
-        }, _options);
-        File.WriteAllText(themeJsonPath, themeJsonContent);
+                Name = theme.Name,
+                Description = theme.Description,
+                Author = theme.Author,
+                PrimaryColor = new PrimaryColor
+                {
+                    R = theme.PrimaryColor.R,
+                    G = theme.PrimaryColor.G,
+                    B = theme.PrimaryColor.B
+                },
+                DarkTheme = theme.DarkTheme,
+                Type = "Custom"
+            };
+
+
+            string themeJsonContent = System.Text.Json.JsonSerializer.Serialize(json, _options);
+            File.WriteAllText(themeJsonPath, themeJsonContent);
+        }
+        catch (Exception ex)
+        {
+            _log($"Error creating theme.json: {ex.Message}");
+        }
     }
 
     private string SaveTempPng(Bitmap bmp, string name)
@@ -279,11 +316,26 @@ public sealed class DSpicoThemeExporter
             return string.Empty;
         }
 
-        if (File.Exists(Path.Combine(PathHelper.GetToolsDirectory(), $"{name}.png")))
+        if (string.IsNullOrEmpty(name))
+        {
+            _log("Error: Name for temporary PNG file is null or empty.");
+            return string.Empty;
+        }
+
+        string toolsDirectory = PathHelper.GetToolsDirectory();
+        if (string.IsNullOrEmpty(toolsDirectory))
+        {
+            _log("Error: Tools directory path is null or empty.");
+            return string.Empty;
+        }
+
+        string path = Path.Combine(toolsDirectory, $"{name}.png");
+
+        if (File.Exists(path))
         {
             _log($"Warning: Temporary file {name}.png already exists and will be overwritten.");
         }
-        var path = Path.Combine(PathHelper.GetToolsDirectory(), $"{name}.png");
+
         bmp.Save(path, ImageFormat.Png);
         return path;
     }
@@ -296,9 +348,16 @@ public sealed class DSpicoThemeExporter
             return false;
         }
 
+        string toolsDirectory = PathHelper.GetToolsDirectory();
+        if (string.IsNullOrEmpty(toolsDirectory))
+        {
+            _log("Error: Tools directory path is null or empty.");
+            return false;
+        }
+
         foreach (var name in names)
         {
-            var path = Path.Combine(PathHelper.GetToolsDirectory(), $"{name}.png");
+            string path = Path.Combine(toolsDirectory, $"{name}.png");
             if (File.Exists(path))
             {
                 File.Delete(path);
@@ -309,19 +368,27 @@ public sealed class DSpicoThemeExporter
 
     private bool MovePalFiles(NormalizedTheme theme)
     {
-        var findAllPalFiles = Directory.GetFiles(PathHelper.GetToolsDirectory(), "*_pal.bin");
-        if (findAllPalFiles.Length == 0)
+        string toolsDirectory = PathHelper.GetToolsDirectory();
+        if (string.IsNullOrEmpty(toolsDirectory))
         {
+            _log("Error: Tools directory path is null or empty.");
             return false;
         }
-        var success = true;
-        foreach (var file in findAllPalFiles)
+
+        string[] findAllPalFiles = Directory.GetFiles(toolsDirectory, FilesContants.Wildcard_PalBinFiles);
+        if (findAllPalFiles.Length == 0)
         {
-            var fileName = Path.GetFileName(file);
+            _log("No palette files found to move.");
+            return false;
+        }
+        bool success = true;
+        foreach (string file in findAllPalFiles)
+        {
+            string fileName = Path.GetFileName(file);
             //removed the _pal suffix from the file name to get the original name
             //e.g. topbg_pal.bin -> topbg.bin
-            var originalFileName = fileName.Replace("_pal.bin", "Pltt.bin");
-            var moved = MoveOutputFile(fileName, originalFileName, theme);
+            string originalFileName = fileName.Replace(FilesContants.PalBinFileSuffix, FilesContants.PlttBinFileSuffix);
+            bool moved = MoveOutputFile(fileName, originalFileName, theme);
             if (!moved)
             {
                 _log($"Failed to move output file: {fileName}");
@@ -334,19 +401,26 @@ public sealed class DSpicoThemeExporter
 
     private bool MoveTexFiles(NormalizedTheme theme)
     {
-        var findAllTexFiles = Directory.GetFiles(PathHelper.GetToolsDirectory(), "*_tex.bin");
-        if (findAllTexFiles.Length == 0)
+        string toolsDirectory = PathHelper.GetToolsDirectory();
+        if (string.IsNullOrEmpty(toolsDirectory))
         {
+            _log("Error: Tools directory path is null or empty.");
             return false;
         }
-        var success = true;
-        foreach (var file in findAllTexFiles)
+        string[] findAllTexFiles = Directory.GetFiles(toolsDirectory, FilesContants.Wildcard_TexBinFiles);
+        if (findAllTexFiles.Length == 0)
         {
-            var fileName = Path.GetFileName(file);
+            _log("No texture files found to move.");
+            return false;
+        }
+        bool success = true;
+        foreach (string file in findAllTexFiles)
+        {
+            string fileName = Path.GetFileName(file);
             //removed the _tex suffix from the file name to get the original name
             //e.g. topbg_tex.bin -> topbg.bin
-            var originalFileName = fileName.Replace("_tex.bin", ".bin");
-            var moved = MoveOutputFile(fileName, originalFileName, theme);
+            string originalFileName = fileName.Replace(FilesContants.TexBinFileSuffix, FilesContants.BinFiles);
+            bool moved = MoveOutputFile(fileName, originalFileName, theme);
             if (!moved)
             {
                 _log($"Failed to move output file: {fileName}");
@@ -358,16 +432,29 @@ public sealed class DSpicoThemeExporter
 
     private bool MoveOutputFile(string sourceFileName, string destFileName, NormalizedTheme theme)
     {
-        var sourcePath = Path.Combine(PathHelper.GetToolsDirectory(), sourceFileName);
-        var destPath = Path.Combine(_outputPath, destFileName);
+        string toolsDirectory = PathHelper.GetToolsDirectory();
+        if (string.IsNullOrEmpty(toolsDirectory))
+        {
+            _log("Error: Tools directory path is null or empty.");
+            return false;
+        }
+        string sourcePath = Path.Combine(toolsDirectory, sourceFileName);
+        string destPath = Path.Combine(_outputPath, destFileName);
         if (!File.Exists(sourcePath))
         {
             _log($"Error: Source file {sourceFileName} not found.");
             return false;
         }
-        var themeFolderPath = Path.Combine(_outputPath, theme.OriginTheme + "_" + theme.Name);
 
-        var finalDestPath = Path.Combine(themeFolderPath, destFileName);
+        if (theme.OriginTheme == null)
+        {
+            _log("Warning: Origin theme is null or empty. Using 'None' as origin theme.");
+            theme.OriginTheme = Enums.EThemeType.None;
+        }
+
+        string themeFolderPath = Path.Combine(_outputPath, theme.OriginTheme + "_" + theme.Name);
+
+        string finalDestPath = Path.Combine(themeFolderPath, destFileName);
         try
         {
             _log($"Moving {sourcePath} to output: {finalDestPath}");

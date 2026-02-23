@@ -54,9 +54,13 @@ namespace DspicoThemeForms
                     throw new Exception("No theme loaded. Please select a valid source theme folder.");
                 }
 
-                //the ptexconv.exe is included in the tools folder and should be in the same directory as the executable, so we can just reference it by name
-                string toolsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Tools");
-                string ptexConvPath = Path.Combine(toolsDir, "ptexconv.exe");
+                string ptexConvPath = PathHelper.GetPtexConvPath();
+                if (string.IsNullOrEmpty(ptexConvPath))
+                {
+                    throw new Exception("PtexConv tool not found. Please ensure it is placed in the correct tools directory.");
+                }
+
+                // Run the export process in a background task to keep the UI responsive
                 await Task.Run(() =>
                 {
                     DSpicoThemeExporter exporter = new(
@@ -90,7 +94,9 @@ namespace DspicoThemeForms
             };
 
             if (dlg.ShowDialog() != DialogResult.OK)
+            {
                 return;
+            }
 
             txtOutputPath.Text = dlg.SelectedPath;
             UpdateConvertButtonState();
@@ -104,7 +110,9 @@ namespace DspicoThemeForms
             };
 
             if (dlg.ShowDialog() != DialogResult.OK)
+            {
                 return;
+            }
 
             txtSourcePath.Text = dlg.SelectedPath;
             DetectThemeAndLoadPreview(dlg.SelectedPath);
@@ -122,13 +130,13 @@ namespace DspicoThemeForms
                 AppendLog("Detecting theme type...");
 
                 EnumWithName<EThemeType>? selectedType = (EnumWithName<EThemeType>?)cmbThemeType.SelectedItem ?? throw new Exception("No theme type selected in the dropdown.");
-                
+
                 if (selectedType.Value == EThemeType.None)
                 {
                     throw new Exception("Please select a valid theme type from the dropdown.");
                 }
 
-                if(selectedType.Value == EThemeType.Auto_Detect)
+                if (selectedType.Value == EThemeType.Auto_Detect)
                 {
                     AppendLog("Using Auto-detecting theme type...");
                 }
@@ -218,7 +226,9 @@ namespace DspicoThemeForms
         private void Picturebox_Paint(object sender, PaintEventArgs e)
         {
             if (sender is not PictureBox pb || pb.Image == null)
+            {
                 return;
+            }
 
             e.Graphics.Clear(pb.BackColor);
 
@@ -226,7 +236,7 @@ namespace DspicoThemeForms
             e.Graphics.PixelOffsetMode = PixelOffsetMode.Half;
             e.Graphics.SmoothingMode = SmoothingMode.None;
 
-            var img = pb.Image;
+            Image img = pb.Image;
 
             // Calculate integer scaling
             float scaleX = (float)pb.ClientSize.Width / img.Width;
@@ -257,7 +267,7 @@ namespace DspicoThemeForms
             UpdateAllowedOverwrite(chkAllowedOverwrite.Checked);
         }
 
-       private void UpdateAllowedOverwrite(bool allowed)
+        private void UpdateAllowedOverwrite(bool allowed)
         {
             if (_currentTheme != null)
             {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DspicoThemeForms.Core.Enums;
+﻿namespace DspicoThemeForms.Core.Enums;
 
 public enum EThemeType
 {

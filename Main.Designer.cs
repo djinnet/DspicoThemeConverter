@@ -30,6 +30,7 @@ namespace DspicoThemeForms
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             lblSource = new Label();
             txtSourcePath = new TextBox();
             btnBrowseSource = new Button();
@@ -509,6 +510,7 @@ namespace DspicoThemeForms
             Controls.Add(txtLog);
             Controls.Add(groupBoxTheme);
             FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "Main";
             Text = "DSpico Theme Converter";

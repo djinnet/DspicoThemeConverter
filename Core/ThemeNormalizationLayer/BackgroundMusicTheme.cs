@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DspicoThemeForms.Core.ThemeNormalizationLayer
+﻿namespace DspicoThemeForms.Core.ThemeNormalizationLayer
 {
     public class BackgroundMusicTheme
     {
