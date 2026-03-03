@@ -20,6 +20,17 @@ public class BitmapHelpers
         return new Bitmap(temp);
     }
 
+    //supported loadbitmap with transparency
+    public static Bitmap LoadBitmapWithTransparency(string path)
+    {
+        using var temp = new Bitmap(path);
+        var bmp = new Bitmap(temp.Width, temp.Height, PixelFormat.Format32bppArgb);
+        using var g = Graphics.FromImage(bmp);
+        g.Clear(Color.Transparent);
+        g.DrawImage(temp, 0, 0, temp.Width, temp.Height);
+        return bmp;
+    }
+
     public static void ValidateResolution(Bitmap bmp, int width, int height, string name)
     {
         if (bmp.Width != width || bmp.Height != height)

@@ -1,28 +1,27 @@
-﻿using DspicoThemeForms.Core.ThemeNormalizationLayer;
+﻿using DspicoThemeForms.Core.Constants;
+using DspicoThemeForms.Core.ThemeNormalizationLayer;
 
 namespace DspicoThemeForms.Core.MetadataFinderHelper;
 
 public class MetadataFinder
 {
-    public static string FileName { get; set; } = "metadata.ini";
-
-    public static bool TryFindMetadataFile(string directory)
+    private static bool TryFindMetadataFile(string directory)
     {
-        string metadataFilePath = Path.Combine(directory, FileName);
+        string metadataFilePath = Path.Combine(directory, FilesContants.MetadataFileName);
         return File.Exists(metadataFilePath);
     }
 
-    public static string? TryReadMetadataFile(string directory)
+    private static string? TryReadMetadataFile(string directory)
     {
         try
         {
-            string metadataFilePath = Path.Combine(directory, FileName);
-            return !File.Exists(metadataFilePath) ? string.Empty : File.ReadAllText(metadataFilePath);
+            string metadataFilePath = Path.Combine(directory, FilesContants.MetadataFileName);
+            return !TryFindMetadataFile(directory) ? string.Empty : File.ReadAllText(metadataFilePath);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Log or handle exceptions as needed
-            return null;
+            return string.Empty;
         }
     }
 

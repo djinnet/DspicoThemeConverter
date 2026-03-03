@@ -1,5 +1,6 @@
 ﻿using DspicoThemeForms.Core.Enums;
 using DspicoThemeForms.Core.Exceptions;
+using DspicoThemeForms.Core.Helper;
 using DspicoThemeForms.Core.ThemeImporters.Importers;
 namespace DspicoThemeForms.Core.ThemeImporters;
 
@@ -91,51 +92,17 @@ public class ThemeImporterFactory
         throw new ThemeTypeNotSupportedException("Could not auto-detect theme type. Please select one manually.", EThemeType.Auto_Detect);
     }
 
-    private static bool LooksLikeTwiLightMenu(string folderPath)
-    {
-        // Most common TwiLightMenu indicators
-        return File.Exists(Path.Combine(folderPath, "theme.ini"));
-    }
+    private static bool LooksLikeAKMenu(string folderPath) => folderPath.FindingAkMenuTheme();
 
-    private static bool LooksLikeDSpicoExported(string folderPath)
-    {
-        // Indicators of an exported DSpico theme (e.g., presence of .ptex files or a specific export log)
-        return File.Exists(Path.Combine(folderPath, "topbg.bin")) && File.Exists(Path.Combine(folderPath, "bottombg.bin")) && File.Exists(Path.Combine(folderPath, "theme.json"));
-    }
+    private static bool LooksLikeTwiLightMenu(string folderPath) => File.Exists(Path.Combine(folderPath, "theme.ini"));
 
-    private static bool LooksLikeDSpicoSource(string folderPath)
-    {
-        // Most common DSpico indicators
-        return File.Exists(Path.Combine(folderPath, "topbg.png")) && File.Exists(Path.Combine(folderPath, "bottombg.png"));
-    }
+    private static bool LooksLikeYsMenu(string folderPath) => File.Exists(Path.Combine(folderPath, "YSMenu.ini"));
 
-    private static bool LooksLikeAKMenu(string folderPath)
-    {
-        // Most common AKMenu indicators
+    private static bool LooksLikeMoonshell(string folderPath) => File.Exists(Path.Combine(folderPath, "sndeff.dat"));
 
-        //if folder contains a file named "custom.ini" and within that file there's a line with "text = acekard"
-        string customIniPath = Path.Combine(folderPath, "custom.ini");
-        if (File.Exists(customIniPath))
-        {
-            var lines = File.ReadAllLines(customIniPath);
-            if (lines.Any(line => line.Trim().Equals("text = acekard", StringComparison.OrdinalIgnoreCase)))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+    private static bool LooksLikeDSpicoSource(string folderPath) => File.Exists(Path.Combine(folderPath, "topbg.png")) && File.Exists(Path.Combine(folderPath, "bottombg.png"));
 
-    private static bool LooksLikeYsMenu(string folderPath)
-    {
-        // Most common YSMenu indicators
-        return File.Exists(Path.Combine(folderPath, "YSMenu.ini"));
-    }
+    private static bool LooksLikeDSpicoExported(string folderPath) => File.Exists(Path.Combine(folderPath, "topbg.bin")) && File.Exists(Path.Combine(folderPath, "bottombg.bin")) && File.Exists(Path.Combine(folderPath, "theme.json"));
 
-    private static bool LooksLikeMoonshell(string folderPath)
-    {
-        // Most common Moonshell indicators
-        return File.Exists(Path.Combine(folderPath, "sndeff.dat"));
-    }
 }
 

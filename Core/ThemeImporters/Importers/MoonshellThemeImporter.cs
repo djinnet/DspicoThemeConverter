@@ -10,4 +10,9 @@ public class MoonshellThemeImporter : IThemeImporter
     {
         return null;
     }
+
+    public bool CanImport(string Folderpath, EgatesFormat format = EgatesFormat.AND)
+    {
+        return false;
+    }
 }

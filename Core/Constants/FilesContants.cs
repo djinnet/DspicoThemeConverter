@@ -11,4 +11,5 @@ public class FilesContants
     public const string TexBinFileSuffix = "_tex.bin";
     public const string BinFiles = ".bin";
     public const string ThemeJsonFileName = "theme.json";
+    public const string MetadataFileName  = "metadata.ini";
 }

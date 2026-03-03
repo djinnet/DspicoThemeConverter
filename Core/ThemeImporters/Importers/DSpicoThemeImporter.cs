@@ -7,6 +7,23 @@ namespace DspicoThemeForms.Core.ThemeImporters.Importers;
 public class DSpicoThemeImporter : IThemeImporter
 {
     public EThemeType Name => EThemeType.DSpico;
+
+    public bool CanImport(string Folderpath, EgatesFormat format = EgatesFormat.AND)
+    {
+        if (string.IsNullOrEmpty(Folderpath))
+            return false;
+        // Check for the presence of expected DSpico theme files
+        string topPath = Path.Combine(Folderpath, "topbg.png");
+        string bottomPath = Path.Combine(Folderpath, "bottombg.png");
+        string gridCellPath = Path.Combine(Folderpath, "gridcell.png");
+        string bannerListCellPath = Path.Combine(Folderpath, "bannerListCell.png");
+        string bannerListCellSelectedPath = Path.Combine(Folderpath, "bannerListCellSelected.png");
+        string scrimPath = Path.Combine(Folderpath, "scrim.png");
+        string gridCellSelectedPath = Path.Combine(Folderpath, "gridcellSelected.png");
+
+        return format.FileChecking([topPath, bottomPath, gridCellPath, bannerListCellPath, scrimPath, bannerListCellSelectedPath, gridCellSelectedPath]);
+    }
+
     public NormalizedTheme? Import(string Folderpath)
     {
         try
@@ -56,7 +73,7 @@ public class DSpicoThemeImporter : IThemeImporter
 
             if (File.Exists(scrimPath))
             {
-                scrimBitmap = BitmapHelpers.LoadBitmap(scrimPath);
+                scrimBitmap = BitmapHelpers.LoadBitmapWithTransparency(scrimPath);
             }
 
             if (File.Exists(gridCellSelectedPath))
@@ -69,7 +86,7 @@ public class DSpicoThemeImporter : IThemeImporter
                 bannerListCellSelectedBitmap = BitmapHelpers.LoadBitmap(bannerListCellSelectedPath);
             }
 
-            var parsedThemeFromMetadata = MetadataFinderHelper.MetadataFinder.Parse(Folderpath);
+            NormalizedTheme parsedThemeFromMetadata = MetadataFinderHelper.MetadataFinder.Parse(Folderpath);
 
             return new NormalizedTheme
             {

@@ -7,6 +7,19 @@ namespace DspicoThemeForms.Core.ThemeImporters.Importers;
 public class YSMenuThemeImporter : IThemeImporter
 {
     public EThemeType Name => EThemeType.YSMenu;
+
+    public bool CanImport(string Folderpath, EgatesFormat format = EgatesFormat.AND)
+    {
+        if (string.IsNullOrEmpty(Folderpath))
+            return false;
+
+        //check for the presence of expected YSMenu theme files
+        string topPath = Path.Combine(Folderpath, "YSMenu1.bmp");
+        string bottomPath = Path.Combine(Folderpath, "YSMenu2.bmp");
+
+        return format.FileChecking([topPath, bottomPath]);
+    }
+
     public NormalizedTheme? Import(string Folderpath)
     {
         try

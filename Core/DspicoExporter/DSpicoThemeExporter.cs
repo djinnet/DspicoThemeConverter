@@ -3,7 +3,6 @@ using DspicoThemeForms.Core.Enums;
 using DspicoThemeForms.Core.Helper;
 using DspicoThemeForms.Core.Runners;
 using DspicoThemeForms.Core.ThemeNormalizationLayer;
-using System.Drawing.Imaging;
 
 namespace DspicoThemeForms.Core.DspicoExporter;
 
@@ -25,66 +24,90 @@ public sealed class DSpicoThemeExporter
         _ptexConvRunner = new PtexConvRunner(ptexConvPath, log);
     }
 
-    public void Export(NormalizedTheme theme)
+    public bool Export(NormalizedTheme theme, bool overwrittenallow)
     {
         try
         {
             if (theme == null)
             {
                 _log("Error: Theme is null.");
-                return;
+                return false;
             }
 
             if (string.IsNullOrEmpty(_outputPath))
             {
                 _log("Error: Output path is null or empty.");
-                return;
+                return false;
             }
 
-            string themeFolderPath = CreateThemeFolderAtDest(theme);
+            // TODO: check if the tool folder doesn't contain any leftover files from previous conversions and clean them up before starting the export process.
+
+            string themeFolderPath = _outputPath.CreateThemeFolderAtDest(theme, _log);
 
             if (string.IsNullOrEmpty(themeFolderPath))
             {
                 _log("Error: Failed to create theme folder at destination.");
-                return;
+                return false;
             }
 
-            CreateThemeJson(theme, themeFolderPath);
+            bool createdJson = theme.CreateThemeJson(themeFolderPath, _log, _options);
 
-            (bool flowControl, PtexConvResult? value) = Run_Ptexconv(theme);
-
-            if (!flowControl)
+            if (!createdJson)
             {
-                return;
+                _log("Error: Failed to create theme.json.");
+                return false;
             }
 
-            if (value == null)
+            _log("Theme.json created successfully. Starting image processing with PtexConv...");
+
+            ConversionResult value = Run_Ptexconv(theme);
+
+            // Log the results of the conversion. If successful, report the results. If not, log the errors.
+            if (value.Success)
             {
-                _log("Error: PtexConvResult is null.");
-                return;
+                _log(value.Commands.IsAllCommandsPresent(theme));
+                _log("PtexConv processing completed successfully. Reporting results...");
+                value.ReportPtexConvResult(_log);
+                return true;
             }
 
-            ReportPtexConvResult(value);
+            // If the conversion was not successful, log the errors. If there are no specific errors, log a generic message.
+            if (value.HasErrors)
+            {
+                _log("PtexConv encountered errors during processing:");
+                foreach (string error in value.Errors)
+                {
+                    _log($"- {error}");
+                }
+            }
+            else
+            {
+                _log("PtexConv failed to process the images, but no specific errors were reported.");
+            }
+            return false;
         }
         catch (Exception ex)
         {
             _log($"An error occurred during export: {ex.Message}");
+            return false;
         }
         finally
         {
-            bool result = RemovedTempFile(["topbg", "bottombg", "bannerListCell", "bannerListCellSelected", "gridCell", "gridCellSelected", "scrim"]);
+            // Moving the move and delete operations to the finally block to ensure they run regardless of success or failure of the export process.
+            string[] files = ["topbg", "bottombg", "bannerListCell", "bannerListCellSelected", "gridCell", "gridCellSelected", "scrim"];
+            bool result = files.RemovedPngFiles(_log);
             if (!result)
             {
-                _log("Failed to remove temporary files: topbg.png, bottombg.png");
+                _log("Failed to remove temporary png files.");
             }
 
-            bool moved = MoveTexFiles(theme);
+            bool moved = _outputPath.MoveFiles(theme, _log, FilesContants.TexBinFileSuffix, FilesContants.BinFiles, FilesContants.Wildcard_TexBinFiles);
             if (!moved)
             {
                 _log("Failed to move tex files");
             }
 
-            bool movedPal = MovePalFiles(theme);
+            bool movedPal = _outputPath.MoveFiles(theme, _log, FilesContants.PalBinFileSuffix, FilesContants.PlttBinFileSuffix, FilesContants.Wildcard_PalBinFiles);
             if (!movedPal)
             {
                 _log("Failed to move pal files");
@@ -93,378 +116,191 @@ public sealed class DSpicoThemeExporter
         }
     }
 
-    private void ReportPtexConvResult(PtexConvResult value)
+    private ConversionResult Run_Ptexconv(NormalizedTheme theme)
     {
-        if (value.NoneRan)
-        {
-            _log("No images were processed with ptexconv. Please check if the theme contains any images.");
-        }
-        else if (value.AllRan)
-        {
-            _log("All images were processed with ptexconv successfully.");
-        }
-        else if (value.SomeRan)
-        {
-
-            _log("Some images were processed with ptexconv. Please check the log for details.");
-        }
-        else
-        {
-            _log("Unexpected result from ptexconv processing. Please check the log for details.");
-        }
-    }
-
-    private (bool flowControl, PtexConvResult? value) Run_Ptexconv(NormalizedTheme theme)
-    {
+        ConversionResult conversionResult = new();
         try
         {
-            PtexConvResult result = new();
-
             if (theme.TopBackground != null)
             {
-                _log("Saving top background...");
-                string topBgPath = SaveTempPng(theme.TopBackground, "topbg");
-                PtexConvCommand TopBGcommand = new()
+                try
                 {
-                    InputImage = "topbg.png",
-                    OutputBaseName = "topbg",
-                    IsTexture = true,
-                    TextureFormat = ETextureFormat.Direct,
-                };
-                _log("Running ptexconv on top background...");
-                bool topresult = _ptexConvRunner.Run(TopBGcommand.ToString());
-                result.HasRunTopBackground = topresult;
+                    _log("Saving top background...");
+                    string topBgPath = theme.TopBackground.SaveTempPng("topbg", _log);
+                    PtexConvCommand TopBGcommand = new()
+                    {
+                        InputImage = "topbg.png",
+                        OutputBaseName = "topbg",
+                        IsTexture = true,
+                        TextureFormat = ETextureFormat.Direct,
+                    };
+                    _log("Running ptexconv on top background...");
+                    bool topresult = _ptexConvRunner.Run(TopBGcommand.ToString());
+                    conversionResult.Commands.Add("topbg", topresult);
+                }
+                catch (Exception ex)
+                {
+                    conversionResult.Commands.Add("topbg", false);
+                    conversionResult.Errors.Add($"Top background processing failed: {ex.Message}");
+                }
             }
 
             if (theme.BottomBackground != null)
             {
-                _log("Saving bottom background...");
-                string bottomBgPath = SaveTempPng(theme.BottomBackground, "bottombg");
-                PtexConvCommand BottomBGcommand = new()
+                try
                 {
-                    InputImage = "bottombg.png",
-                    OutputBaseName = "bottombg",
-                    IsTexture = true,
-                    TextureFormat = ETextureFormat.Direct,
-                };
-                _log("Running ptexconv on bottom background...");
-                bool bottomresult = _ptexConvRunner.Run(BottomBGcommand.ToString());
-                result.HasRunBottomBackground = bottomresult;
+                    _log("Saving bottom background...");
+                    string bottomBgPath = theme.BottomBackground.SaveTempPng("bottombg", _log);
+                    PtexConvCommand BottomBGcommand = new()
+                    {
+                        InputImage = "bottombg.png",
+                        OutputBaseName = "bottombg",
+                        IsTexture = true,
+                        TextureFormat = ETextureFormat.Direct,
+                    };
+                    _log("Running ptexconv on bottom background...");
+                    bool bottomresult = _ptexConvRunner.Run(BottomBGcommand.ToString());
+                    conversionResult.Commands.Add("bottombg", bottomresult);
+                }
+                catch (Exception ex)
+                {
+                    conversionResult.Commands.Add("bottombg", false);
+                    conversionResult.Errors.Add($"Bottom background processing failed: {ex.Message}");
+                }
             }
 
             if (theme.BannerListCell != null)
             {
-                _log("Saving banner list cell...");
-                string bannerListCellPath = SaveTempPng(theme.BannerListCell, "bannerListCell");
-                PtexConvCommand BannerListCellCommand = new()
+                try
                 {
-                    InputImage = "bannerListCell.png",
-                    OutputBaseName = "bannerListCell",
-                    IsTexture = true,
-                    TextureFormat = ETextureFormat.A3I5,
-                };
-                _log("Running ptexconv on banner list cell...");
-                bool bannerListCellResult = _ptexConvRunner.Run(BannerListCellCommand.ToString());
-                result.HasRunBannerListCell = bannerListCellResult;
+                    _log("Saving banner list cell...");
+                    string bannerListCellPath = theme.BannerListCell.SaveTempPng("bannerListCell", _log);
+                    PtexConvCommand BannerListCellCommand = new()
+                    {
+                        InputImage = "bannerListCell.png",
+                        OutputBaseName = "bannerListCell",
+                        IsTexture = true,
+                        TextureFormat = ETextureFormat.A3I5,
+                    };
+                    _log("Running ptexconv on banner list cell...");
+                    bool bannerListCellResult = _ptexConvRunner.Run(BannerListCellCommand.ToString());
+                    conversionResult.Commands.Add("bannerListCell", bannerListCellResult);
+                }
+                catch (Exception ex)
+                {
+                    conversionResult.Commands.Add("bannerListCell", false);
+                    conversionResult.Errors.Add($"Banner list cell processing failed: {ex.Message}");
+                }
             }
 
             if (theme.BannerListCellSelected != null)
             {
-                _log("Saving banner list cell selected...");
-                string bannerListCellSelectedPath = SaveTempPng(theme.BannerListCellSelected, "bannerListCellSelected");
-                PtexConvCommand BannerListCellSelectedCommand = new()
+                try
                 {
-                    InputImage = "bannerListCellSelected.png",
-                    OutputBaseName = "bannerListCellSelected",
-                    IsTexture = true,
-                    TextureFormat = ETextureFormat.A3I5,
-                };
-                _log("Running ptexconv on banner list cell selected...");
-                bool bannerListCellSelectedResult = _ptexConvRunner.Run(BannerListCellSelectedCommand.ToString());
-                result.HasRunBannerListCellSelected = bannerListCellSelectedResult;
+                    _log("Saving banner list cell selected...");
+                    string bannerListCellSelectedPath = theme.BannerListCellSelected.SaveTempPng("bannerListCellSelected", _log);
+                    PtexConvCommand BannerListCellSelectedCommand = new()
+                    {
+                        InputImage = "bannerListCellSelected.png",
+                        OutputBaseName = "bannerListCellSelected",
+                        IsTexture = true,
+                        TextureFormat = ETextureFormat.A3I5,
+                    };
+                    _log("Running ptexconv on banner list cell selected...");
+                    bool bannerListCellSelectedResult = _ptexConvRunner.Run(BannerListCellSelectedCommand.ToString());
+                    conversionResult.Commands.Add("bannerListCellSelected", bannerListCellSelectedResult);
+                }
+                catch (Exception ex)
+                {
+                    conversionResult.Commands.Add("bannerListCellSelected", false);
+                    conversionResult.Errors.Add($"Banner list cell selected processing failed: {ex.Message}");
+                }
             }
 
 
             if (theme.GridCell != null)
             {
-                _log("Saving grid cell...");
-                string gridCellPath = SaveTempPng(theme.GridCell, "gridCell");
-                PtexConvCommand GridCellCommand = new()
+                try
                 {
-                    InputImage = "gridCell.png",
-                    OutputBaseName = "gridCell",
-                    IsTexture = true,
-                    TextureFormat = ETextureFormat.A3I5,
-                };
-                _log("Running ptexconv on grid cell...");
-                bool gridCellResult = _ptexConvRunner.Run(GridCellCommand.ToString());
-                result.HasRunGridCell = gridCellResult;
+                    _log("Saving grid cell...");
+                    string gridCellPath = theme.GridCell.SaveTempPng("gridCell", _log);
+                    PtexConvCommand GridCellCommand = new()
+                    {
+                        InputImage = "gridCell.png",
+                        OutputBaseName = "gridCell",
+                        IsTexture = true,
+                        TextureFormat = ETextureFormat.A3I5,
+                    };
+                    _log("Running ptexconv on grid cell...");
+                    bool gridCellResult = _ptexConvRunner.Run(GridCellCommand.ToString());
+                    conversionResult.Commands.Add("gridCell", gridCellResult);
+                }
+                catch (Exception ex)
+                {
+                    conversionResult.Commands.Add("gridCell", false);
+                    conversionResult.Errors.Add($"Grid cell processing failed: {ex.Message}");
+                }
             }
 
             if (theme.GridCellSelected != null)
             {
-                _log("Saving grid cell selected...");
-                string gridCellSelectedPath = SaveTempPng(theme.GridCellSelected, "gridCellSelected");
-                PtexConvCommand GridCellSelectedCommand = new()
+                try
                 {
-                    InputImage = "gridCellSelected.png",
-                    OutputBaseName = "gridCellSelected",
-                    IsTexture = true,
-                    TextureFormat = ETextureFormat.A3I5,
-                };
-                _log("Running ptexconv on grid cell selected...");
-                bool gridCellSelectedResult = _ptexConvRunner.Run(GridCellSelectedCommand.ToString());
-                result.HasRunGridCellSelected = gridCellSelectedResult;
+                    _log("Saving grid cell selected...");
+                    string gridCellSelectedPath = theme.GridCellSelected.SaveTempPng("gridCellSelected", _log);
+                    PtexConvCommand GridCellSelectedCommand = new()
+                    {
+                        InputImage = "gridCellSelected.png",
+                        OutputBaseName = "gridCellSelected",
+                        IsTexture = true,
+                        TextureFormat = ETextureFormat.A3I5,
+                    };
+                    _log("Running ptexconv on grid cell selected...");
+                    bool gridCellSelectedResult = _ptexConvRunner.Run(GridCellSelectedCommand.ToString());
+                    conversionResult.Commands.Add("gridCellSelected", gridCellSelectedResult);
+                }
+                catch (Exception ex)
+                {
+                    conversionResult.Commands.Add("gridCellSelected", false);
+                    conversionResult.Errors.Add($"Grid cell selected processing failed: {ex.Message}");
+                }
             }
 
             if (theme.Scrim != null)
             {
-                _log("Saving scrim...");
-                string scrimPath = SaveTempPng(theme.Scrim, "scrim");
-                PtexConvCommand ScrimCommand = new()
+                try
                 {
-                    InputImage = "scrim.png",
-                    OutputBaseName = "scrim",
-                    IsTexture = true,
-                    TextureFormat = ETextureFormat.A5I3,
-                };
-                _log("Running ptexconv on scrim...");
-                bool scrimResult = _ptexConvRunner.Run(ScrimCommand.ToString());
-                result.HasRunScrim = scrimResult;
+                    _log("Saving scrim...");
+                    string scrimPath = theme.Scrim.SaveTempPng("scrim", _log);
+                    PtexConvCommand ScrimCommand = new()
+                    {
+                        InputImage = "scrim.png",
+                        OutputBaseName = "scrim",
+                        IsTexture = true,
+                        TextureFormat = ETextureFormat.A5I3,
+                    };
+                    _log("Running ptexconv on scrim...");
+                    bool scrimResult = _ptexConvRunner.Run(ScrimCommand.ToString());
+                    conversionResult.Commands.Add("scrim", scrimResult);
+                }
+                catch (Exception ex)
+                {
+                    conversionResult.Commands.Add("scrim", false);
+                    conversionResult.Errors.Add($"Scrim processing failed: {ex.Message}");
+                }
             }
-            return (flowControl: true, value: result);
+
+            // Determine overall success based on individual command results
+            conversionResult.Success = !conversionResult.HasErrors;
+
+            return conversionResult;
         }
         catch (Exception ex)
         {
             _log($"An error occurred while running ptexconv: {ex.Message}");
-            return (flowControl: false, value: null);
-        }
-    }
-
-    private string CreateThemeFolderAtDest(NormalizedTheme theme)
-    {
-        try
-        {
-            _log("Creating theme folder...");
-            if (theme.OriginTheme == null)
-            {
-                _log("Warning: Origin theme is null or empty. Using 'None' as origin theme.");
-                theme.OriginTheme = Enums.EThemeType.None;
-            }
-
-            if (string.IsNullOrEmpty(theme.Name))
-            {
-                _log("Warning: Theme name is null or empty. Using 'Unnamed' as theme name.");
-                theme.Name = "Unnamed";
-            }
-            string themeFolderPath = Path.Combine(_outputPath, theme.OriginTheme + "_" + theme.Name);
-            if (!Directory.Exists(themeFolderPath))
-            {
-                _log($"Theme folder does not exist. Creating new folder at: {themeFolderPath}");
-            }
-            else
-            {
-                _log($"Theme folder already exists at: {themeFolderPath}. It will be overwritten.");
-            }
-            Directory.CreateDirectory(themeFolderPath);
-            return themeFolderPath;
-        }
-        catch (Exception ex)
-        {
-            _log($"Error creating theme folder at destination: {ex.Message}");
-            return string.Empty;
-        }
-    }
-
-    private void CreateThemeJson(NormalizedTheme theme, string themeFolderPath)
-    {
-        try
-        {
-            _log("Writing theme.json...");
-            string themeJsonPath = Path.Combine(themeFolderPath, FilesContants.ThemeJsonFileName);
-
-            DSpicoThemeJson json = new()
-            {
-                Name = theme.Name,
-                Description = theme.Description,
-                Author = theme.Author,
-                PrimaryColor = new PrimaryColor
-                {
-                    R = theme.PrimaryColor.R,
-                    G = theme.PrimaryColor.G,
-                    B = theme.PrimaryColor.B
-                },
-                DarkTheme = theme.DarkTheme,
-                Type = "Custom"
-            };
-
-
-            string themeJsonContent = System.Text.Json.JsonSerializer.Serialize(json, _options);
-            File.WriteAllText(themeJsonPath, themeJsonContent);
-        }
-        catch (Exception ex)
-        {
-            _log($"Error creating theme.json: {ex.Message}");
-        }
-    }
-
-    private string SaveTempPng(Bitmap bmp, string name)
-    {
-        if (bmp == null)
-        {
-            _log($"Error: Bitmap for {name} is null.");
-            return string.Empty;
-        }
-
-        if (string.IsNullOrEmpty(name))
-        {
-            _log("Error: Name for temporary PNG file is null or empty.");
-            return string.Empty;
-        }
-
-        string toolsDirectory = PathHelper.GetToolsDirectory();
-        if (string.IsNullOrEmpty(toolsDirectory))
-        {
-            _log("Error: Tools directory path is null or empty.");
-            return string.Empty;
-        }
-
-        string path = Path.Combine(toolsDirectory, $"{name}.png");
-
-        if (File.Exists(path))
-        {
-            _log($"Warning: Temporary file {name}.png already exists and will be overwritten.");
-        }
-
-        bmp.Save(path, ImageFormat.Png);
-        return path;
-    }
-
-    private bool RemovedTempFile(string[] names)
-    {
-        if (names == null || names.Length == 0)
-        {
-            _log("No temporary file names provided for deletion.");
-            return false;
-        }
-
-        string toolsDirectory = PathHelper.GetToolsDirectory();
-        if (string.IsNullOrEmpty(toolsDirectory))
-        {
-            _log("Error: Tools directory path is null or empty.");
-            return false;
-        }
-
-        foreach (var name in names)
-        {
-            string path = Path.Combine(toolsDirectory, $"{name}.png");
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-            }
-        }
-        return true;
-    }
-
-    private bool MovePalFiles(NormalizedTheme theme)
-    {
-        string toolsDirectory = PathHelper.GetToolsDirectory();
-        if (string.IsNullOrEmpty(toolsDirectory))
-        {
-            _log("Error: Tools directory path is null or empty.");
-            return false;
-        }
-
-        string[] findAllPalFiles = Directory.GetFiles(toolsDirectory, FilesContants.Wildcard_PalBinFiles);
-        if (findAllPalFiles.Length == 0)
-        {
-            _log("No palette files found to move.");
-            return false;
-        }
-        bool success = true;
-        foreach (string file in findAllPalFiles)
-        {
-            string fileName = Path.GetFileName(file);
-            //removed the _pal suffix from the file name to get the original name
-            //e.g. topbg_pal.bin -> topbg.bin
-            string originalFileName = fileName.Replace(FilesContants.PalBinFileSuffix, FilesContants.PlttBinFileSuffix);
-            bool moved = MoveOutputFile(fileName, originalFileName, theme);
-            if (!moved)
-            {
-                _log($"Failed to move output file: {fileName}");
-                success = false;
-            }
-        }
-        return success;
-    }
-
-
-    private bool MoveTexFiles(NormalizedTheme theme)
-    {
-        string toolsDirectory = PathHelper.GetToolsDirectory();
-        if (string.IsNullOrEmpty(toolsDirectory))
-        {
-            _log("Error: Tools directory path is null or empty.");
-            return false;
-        }
-        string[] findAllTexFiles = Directory.GetFiles(toolsDirectory, FilesContants.Wildcard_TexBinFiles);
-        if (findAllTexFiles.Length == 0)
-        {
-            _log("No texture files found to move.");
-            return false;
-        }
-        bool success = true;
-        foreach (string file in findAllTexFiles)
-        {
-            string fileName = Path.GetFileName(file);
-            //removed the _tex suffix from the file name to get the original name
-            //e.g. topbg_tex.bin -> topbg.bin
-            string originalFileName = fileName.Replace(FilesContants.TexBinFileSuffix, FilesContants.BinFiles);
-            bool moved = MoveOutputFile(fileName, originalFileName, theme);
-            if (!moved)
-            {
-                _log($"Failed to move output file: {fileName}");
-                success = false;
-            }
-        }
-        return success;
-    }
-
-    private bool MoveOutputFile(string sourceFileName, string destFileName, NormalizedTheme theme)
-    {
-        string toolsDirectory = PathHelper.GetToolsDirectory();
-        if (string.IsNullOrEmpty(toolsDirectory))
-        {
-            _log("Error: Tools directory path is null or empty.");
-            return false;
-        }
-        string sourcePath = Path.Combine(toolsDirectory, sourceFileName);
-        string destPath = Path.Combine(_outputPath, destFileName);
-        if (!File.Exists(sourcePath))
-        {
-            _log($"Error: Source file {sourceFileName} not found.");
-            return false;
-        }
-
-        if (theme.OriginTheme == null)
-        {
-            _log("Warning: Origin theme is null or empty. Using 'None' as origin theme.");
-            theme.OriginTheme = Enums.EThemeType.None;
-        }
-
-        string themeFolderPath = Path.Combine(_outputPath, theme.OriginTheme + "_" + theme.Name);
-
-        string finalDestPath = Path.Combine(themeFolderPath, destFileName);
-        try
-        {
-            _log($"Moving {sourcePath} to output: {finalDestPath}");
-            File.Move(sourcePath, finalDestPath);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _log($"Error moving file {sourceFileName} to output: {ex.Message}");
-            return false;
+            conversionResult.Errors.Add($"An error occurred while running ptexconv: {ex.Message}");
+            conversionResult.Success = false;
+            return conversionResult;
         }
     }
 }

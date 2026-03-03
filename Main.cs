@@ -40,6 +40,7 @@ namespace DspicoThemeForms
             btnBrowseSource.Click += BtnBrowseSource_Click;
             btnBrowseOutput.Click += BtnBrowseOutput_Click;
             btnConvert.Click += BtnConvert_ClickAsync;
+            btnColorPicker.Click += btnColorPicker_Click;
         }
 
         private async void BtnConvert_ClickAsync(object? sender, EventArgs e)
@@ -60,6 +61,49 @@ namespace DspicoThemeForms
                     throw new Exception("PtexConv tool not found. Please ensure it is placed in the correct tools directory.");
                 }
 
+                //check if metadata is allowed to be overwritten, if not then we need to preserve the original metadata by copying it from the current theme to a new instance of NormalizedTheme that we will pass to the exporter. This is necessary because the exporter will modify the metadata fields of the theme, and if we do not want that then we need to create a copy of the theme with the original metadata values before passing it to the exporter.
+                NormalizedTheme normalizedTheme;
+                bool overwriteAllowed = chkAllowedOverwrite.Checked;
+
+                if (chkAllowedOverwrite.Checked)
+                {
+                    EThemeType originThemeType = EThemeType.None;
+                    if (Enum.TryParse(txtThemeOrigin.Text, out EThemeType parsedOrigin))
+                    {
+                        originThemeType = parsedOrigin;
+                    }
+
+                    var selectedcolor = colorpreviewpanel.BackColor;
+                    //update the current theme's metadata with the values from the textboxes, since we are allowed to overwrite the metadata
+                    normalizedTheme = new NormalizedTheme()
+                    {
+                        Name = txtThemeName.Text,
+                        Description = txtThemeDesc.Text,
+                        Author = txtThemeAuthor.Text,
+                        ThemeVersion = txtVersion.Text,
+                        OriginTheme = originThemeType,
+                        DarkTheme = chkDarkTheme.Checked,
+                        PrimaryColor = selectedcolor,
+                        BackgroundMusicThemes = Array.Empty<BackgroundMusicTheme>().ToList(),
+                        TopBackground = _currentTheme.TopBackground,
+                        BottomBackground = _currentTheme.BottomBackground,
+                        GridCell = _currentTheme.GridCell,
+                        GridCellPltt = _currentTheme.GridCellPltt,
+                        BannerListCell = _currentTheme.BannerListCell,
+                        BannerListCellPltt = _currentTheme.BannerListCellPltt,
+                        BannerListCellSelected = _currentTheme.BannerListCellSelected,
+                        BannerListCellSelectedPltt = _currentTheme.BannerListCellSelectedPltt,
+                        GridCellSelected = _currentTheme.GridCellSelected,
+                        GridCellPlttSelected = _currentTheme.GridCellPlttSelected,
+                        Scrim = _currentTheme.Scrim,
+                        ScrimPltt = _currentTheme.ScrimPltt
+                    };
+                }
+                else
+                {
+                    normalizedTheme = _currentTheme;
+                }
+
                 // Run the export process in a background task to keep the UI responsive
                 await Task.Run(() =>
                 {
@@ -69,7 +113,7 @@ namespace DspicoThemeForms
                         AppendLogSafe
                     );
 
-                    exporter.Export(theme: _currentTheme);
+                    exporter.Export(theme: normalizedTheme, overwriteAllowed);
                 });
 
                 AppendLog("Conversion completed successfully");
@@ -152,6 +196,15 @@ namespace DspicoThemeForms
                 //update the combobox to show the detected type
                 cmbThemeType.SelectedIndex = cmbThemeType.Items.Cast<EnumWithName<EThemeType>>().ToList().FindIndex(i => i.Value == importer.Name);
                 cmbThemeType.Invalidate();
+
+                if (importer.CanImport(path, EgatesFormat.AND))
+                {
+                    AppendLog("Importer can import this theme. Proceeding with import...");
+                }
+                else
+                {
+                    throw new Exception("The selected importer cannot import this theme. Please check the folder structure and contents.");
+                }
 
                 _currentTheme = importer.Import(path);
 
@@ -293,6 +346,21 @@ namespace DspicoThemeForms
             _isDarkMode = chkDarkMode.Checked;
 
             dm.ApplyTheme(_isDarkMode);
+        }
+
+        private void btnColorPicker_Click(object? sender, EventArgs e)
+        {
+            var colorDialog = new ColorDialog()
+            {
+                SolidColorOnly = true,
+
+            };
+
+            if (colorDialog.ShowDialog() == DialogResult.OK)
+            {
+                Color selectedColor = colorDialog.Color;
+                colorpreviewpanel.BackColor = selectedColor;
+            }
         }
     }
 }

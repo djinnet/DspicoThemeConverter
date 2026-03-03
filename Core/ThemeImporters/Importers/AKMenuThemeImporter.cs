@@ -8,6 +8,16 @@ public class AKMenuThemeImporter : IThemeImporter
 {
     public EThemeType Name => EThemeType.AKMenu;
 
+    public bool CanImport(string Folderpath, EgatesFormat format = EgatesFormat.AND)
+    {
+        if (string.IsNullOrEmpty(Folderpath))
+            return false;
+        // Check for the presence of expected AKMenu theme files
+        string topPath = Path.Combine(Folderpath, "upper_screen.bmp");
+        string bottomPath = Path.Combine(Folderpath, "lower_screen.bmp");
+        return format.FileChecking([topPath, bottomPath]);
+    }
+
     public NormalizedTheme? Import(string Folderpath)
     {
         try
