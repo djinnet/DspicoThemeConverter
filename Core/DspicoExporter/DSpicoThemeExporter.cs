@@ -6,6 +6,14 @@ using DspicoThemeForms.Core.ThemeNormalizationLayer;
 
 namespace DspicoThemeForms.Core.DspicoExporter;
 
+/// <summary>
+/// Provides functionality for exporting themes, including processing associated images and generating required output
+/// files.
+/// </summary>
+/// <remarks>The DSpicoThemeExporter class validates input parameters, manages the export workflow, and logs the
+/// results of the operation. It processes theme images using the ptexconv tool and handles cleanup of temporary files.
+/// This class is intended for scenarios where themes need to be exported in a format compatible with downstream systems
+/// or applications.</remarks>
 public sealed class DSpicoThemeExporter
 {
     private readonly PtexConvRunner _ptexConvRunner;
@@ -17,6 +25,15 @@ public sealed class DSpicoThemeExporter
         WriteIndented = true
     };
 
+    /// <summary>
+    /// Initializes a new instance of the DSpicoThemeExporter class using the specified output directory, Ptex
+    /// conversion executable path, and logging delegate.
+    /// </summary>
+    /// <remarks>Ensure that the provided paths are valid and that the application has sufficient permissions
+    /// to read and write files in the specified locations.</remarks>
+    /// <param name="outputPath">The file system path where exported files will be saved. Must be a valid, accessible directory.</param>
+    /// <param name="ptexConvPath">The file system path to the Ptex conversion executable. Must reference a valid executable file.</param>
+    /// <param name="log">A delegate that receives log messages as strings. Used to report progress and errors during export operations.</param>
     public DSpicoThemeExporter(string outputPath, string ptexConvPath, Action<string> log)
     {
         _outputPath = outputPath;
@@ -24,6 +41,15 @@ public sealed class DSpicoThemeExporter
         _ptexConvRunner = new PtexConvRunner(ptexConvPath, log);
     }
 
+    /// <summary>
+    /// Exports the specified theme to the designated output path, processing images and generating necessary files.
+    /// </summary>
+    /// <remarks>The method performs several checks before proceeding with the export, including validation of
+    /// the theme and output path. It also handles cleanup of temporary files and logs the results of the export
+    /// process.</remarks>
+    /// <param name="theme">The theme to be exported. Must not be null.</param>
+    /// <param name="overwrittenallow">A boolean indicating whether existing files can be overwritten during the export process.</param>
+    /// <returns>true if the export operation is successful; otherwise, false.</returns>
     public bool Export(NormalizedTheme theme, bool overwrittenallow)
     {
         try
@@ -116,6 +142,16 @@ public sealed class DSpicoThemeExporter
         }
     }
 
+    /// <summary>
+    /// Processes the images associated with various theme elements by converting them using the ptexconv tool.
+    /// </summary>
+    /// <remarks>Each theme element is processed individually, and any errors encountered during conversion
+    /// are captured in the result. The overall success is determined by the presence or absence of errors in the
+    /// conversion process.</remarks>
+    /// <param name="theme">The theme containing the images to be converted, including backgrounds, banner list cells, grid cells, and
+    /// scrims. Cannot be null.</param>
+    /// <returns>A ConversionResult that indicates whether the conversion was successful and contains any errors encountered
+    /// during processing.</returns>
     private ConversionResult Run_Ptexconv(NormalizedTheme theme)
     {
         ConversionResult conversionResult = new();

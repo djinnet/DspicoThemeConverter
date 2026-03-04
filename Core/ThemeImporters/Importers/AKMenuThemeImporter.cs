@@ -4,6 +4,14 @@ using DspicoThemeForms.Core.ThemeNormalizationLayer;
 
 namespace DspicoThemeForms.Core.ThemeImporters.Importers;
 
+/// <summary>
+/// Provides functionality to import AKMenu themes by validating required files and extracting theme metadata from a
+/// specified folder.
+/// </summary>
+/// <remarks>This class implements the IThemeImporter interface for AKMenu themes. It checks for the presence of
+/// necessary bitmap files and optionally reads metadata from a custom.ini file. If required files are missing or the
+/// folder does not exist, appropriate exceptions are thrown during import. Use this importer to convert AKMenu theme
+/// assets into a normalized theme format for further processing or display.</remarks>
 public class AKMenuThemeImporter : IThemeImporter
 {
     public EThemeType Name => EThemeType.AKMenu;

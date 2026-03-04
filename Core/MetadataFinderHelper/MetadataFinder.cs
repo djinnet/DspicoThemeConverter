@@ -3,14 +3,37 @@ using DspicoThemeForms.Core.ThemeNormalizationLayer;
 
 namespace DspicoThemeForms.Core.MetadataFinderHelper;
 
+/// <summary>
+/// Provides methods for locating, reading, and parsing theme metadata files to produce normalized theme objects.
+/// </summary>
+/// <remarks>The MetadataFinder class enables discovery and extraction of theme metadata from files, including
+/// author, theme type, primary color, description, and version. It handles missing or malformed metadata gracefully by
+/// supplying default values and ensures exceptions during file access or parsing do not disrupt usage. This class is
+/// intended for scenarios where robust theme metadata handling is required, such as theme conversion or validation
+/// workflows.</remarks>
 public class MetadataFinder
 {
+    /// <summary>
+    /// Determines whether a metadata file exists in the specified directory.
+    /// </summary>
+    /// <remarks>This method checks for the presence of a file named 'metadata.ini' in the provided
+    /// directory.</remarks>
+    /// <param name="directory">The path of the directory to search for the metadata file. This parameter cannot be null or empty.</param>
+    /// <returns>true if the metadata file exists; otherwise, false.</returns>
     private static bool TryFindMetadataFile(string directory)
     {
         string metadataFilePath = Path.Combine(directory, FilesContants.MetadataFileName);
         return File.Exists(metadataFilePath);
     }
 
+    /// <summary>
+    /// Attempts to read the contents of the metadata file located in the specified directory.
+    /// </summary>
+    /// <remarks>If the metadata file is not found, the method returns an empty string without throwing an
+    /// exception. Any exceptions encountered during file reading are caught and handled internally.</remarks>
+    /// <param name="directory">The path to the directory where the metadata file is expected to be located. This parameter cannot be null or
+    /// empty.</param>
+    /// <returns>The contents of the metadata file as a string if found; otherwise, an empty string.</returns>
     private static string? TryReadMetadataFile(string directory)
     {
         try
@@ -25,6 +48,16 @@ public class MetadataFinder
         }
     }
 
+    /// <summary>
+    /// Parses the specified theme metadata file and returns a normalized theme object containing its properties.
+    /// </summary>
+    /// <remarks>The method attempts to read various properties from the metadata file, including author,
+    /// theme type (dark or light), primary color, description, and version. If any of these properties are not
+    /// specified in the metadata, default values are used. The method handles potential exceptions during parsing and
+    /// defaults to a white primary color if the specified color format is invalid.</remarks>
+    /// <param name="path">The path to the theme metadata file. This must be a valid file path and cannot be null or empty.</param>
+    /// <returns>A NormalizedTheme object populated with the theme's properties, including the author's name, theme type, primary
+    /// color, description, and version. If the metadata file is missing or empty, a default theme is returned.</returns>
     public static NormalizedTheme Parse(string path)
     {
         NormalizedTheme theme = new()

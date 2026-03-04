@@ -2,6 +2,12 @@
 
 namespace DspicoThemeForms.Core.Enums;
 
+/// <summary>
+/// Specifies the available texture formats for representing image data within the application.
+/// </summary>
+/// <remarks>Each format defines a distinct method of storing texture information, which can impact both
+/// performance and visual fidelity. The enumeration includes options for palette-based, direct color, and compressed
+/// formats, allowing developers to select the most appropriate format for their use case.</remarks>
 public enum ETextureFormat : int
 {
     None = 0,

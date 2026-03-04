@@ -4,6 +4,14 @@ using DspicoThemeForms.Core.ThemeNormalizationLayer;
 
 namespace DspicoThemeForms.Core.ThemeImporters.Importers;
 
+/// <summary>
+/// Provides functionality to import DSpico themes by validating required files and constructing a normalized theme
+/// representation.
+/// </summary>
+/// <remarks>This class implements the IThemeImporter interface for DSpico themes. It checks for the presence and
+/// validity of expected image files within a specified folder and parses theme metadata to produce a NormalizedTheme
+/// object. Use CanImport to verify that a folder contains a valid DSpico theme before calling Import. The Import method
+/// returns null if the theme cannot be imported due to missing files or errors.</remarks>
 public class DSpicoThemeImporter : IThemeImporter
 {
     public EThemeType Name => EThemeType.DSpico;

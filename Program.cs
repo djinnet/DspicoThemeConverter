@@ -10,16 +10,16 @@ namespace DspicoThemeForms
         [STAThread]
         static void Main()
         {
-            var services = new ServiceCollection();
+            ServiceCollection services = new();
             services.AddSingleton<IDarkModeFactory, DarkModeFactory>();
             services.AddSingleton<Main>();
 
-            using var serviceProvider = services.BuildServiceProvider();
+            using ServiceProvider serviceProvider = services.BuildServiceProvider();
 
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            var mainForm = serviceProvider.GetRequiredService<Main>();
+            Main mainForm = serviceProvider.GetRequiredService<Main>();
             Application.Run(mainForm);
         }
     }

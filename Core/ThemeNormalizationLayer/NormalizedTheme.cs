@@ -2,6 +2,14 @@
 
 namespace DspicoThemeForms.Core.ThemeNormalizationLayer;
 
+/// <summary>
+/// Represents a normalized theme that encapsulates customizable appearance and metadata for use in a user interface.
+/// </summary>
+/// <remarks>A NormalizedTheme provides a unified structure for defining visual elements such as colors and
+/// background images, along with metadata including the theme's name, description, author, and version. It supports
+/// optional overwriting of theme data when converting to a DSpico theme, and can include a collection of background
+/// music themes. This class is intended to facilitate consistent theme management and conversion across different theme
+/// formats.</remarks>
 public sealed class NormalizedTheme
 {
     public required string Name { get; set; }

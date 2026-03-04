@@ -4,6 +4,14 @@ using DspicoThemeForms.Core.ThemeNormalizationLayer;
 
 namespace DspicoThemeForms.Core.ThemeImporters.Importers;
 
+/// <summary>
+/// Provides functionality to import YSMenu themes by validating and converting theme assets into a normalized format.
+/// </summary>
+/// <remarks>This class implements the IThemeImporter interface to support importing themes from the YSMenu
+/// format. It checks for the required bitmap files and ensures they meet expected resolution requirements before
+/// creating a NormalizedTheme instance. If any required files are missing or invalid, the import process will fail
+/// gracefully. Use this importer when you need to convert YSMenu theme folders into a standardized theme
+/// representation.</remarks>
 public class YSMenuThemeImporter : IThemeImporter
 {
     public EThemeType Name => EThemeType.YSMenu;
