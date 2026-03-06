@@ -2,6 +2,7 @@
 using DspicoThemeForms.Core.DspicoExporter;
 using DspicoThemeForms.Core.Runners;
 using DspicoThemeForms.Core.ThemeNormalizationLayer;
+using Serilog;
 
 namespace DspicoThemeForms.Core.Helper;
 
@@ -87,11 +88,11 @@ public static class ThemeHelper
     /// <param name="_options">The options to customize the JSON serialization process, such as formatting and property naming policies.</param>
     /// <returns>true if the theme.json file was successfully created or overwritten; otherwise, false if an error occurred
     /// during the process.</returns>
-    public static bool CreateThemeJson(this NormalizedTheme theme, string themeFolderPath, Action<string> _log, System.Text.Json.JsonSerializerOptions _options)
+    public static bool CreateThemeJson(this NormalizedTheme theme, string themeFolderPath, ILogger _log, System.Text.Json.JsonSerializerOptions _options)
     {
         try
         {
-            _log("Writing theme.json...");
+            _log.Information("Writing theme.json...");
             string themeJsonPath = Path.Combine(themeFolderPath, FilesContants.ThemeJsonFileName);
 
             DSpicoThemeJson json = new()
@@ -114,7 +115,7 @@ public static class ThemeHelper
 
             if (File.Exists(themeJsonPath))
             {
-                _log($"Warning: theme.json already exists at {themeJsonPath} and will be overwritten.");
+                _log.Warning($"Warning: theme.json already exists at {themeJsonPath} and will be overwritten.");
             }
 
             File.WriteAllText(themeJsonPath, themeJsonContent);
@@ -122,7 +123,7 @@ public static class ThemeHelper
         }
         catch (Exception ex)
         {
-            _log($"Error creating theme.json: {ex.Message}");
+            _log.Error($"Error creating theme.json: {ex.Message}");
             return false;
         }
     }
@@ -135,25 +136,25 @@ public static class ThemeHelper
     /// feedback to users or logs after attempting ptexconv image conversion.</remarks>
     /// <param name="value">The conversion result that indicates the status of ptexconv processing for the current operation.</param>
     /// <param name="_log">An action delegate used to log messages describing the processing outcome.</param>
-    public static void ReportPtexConvResult(this ConversionResult value, Action<string> _log)
+    public static void ReportPtexConvResult(this ConversionResult value, ILogger _log)
     {
 
         if (value.DidNoneCommandRan())
         {
-            _log("No images were processed with ptexconv. Please check if the theme contains any images.");
+            _log.Warning("No images were processed with ptexconv. Please check if the theme contains any images.");
         }
         else if (value.DidAllCommandRan())
         {
-            _log("All images were processed with ptexconv successfully.");
+            _log.Information("All images were processed with ptexconv successfully.");
         }
         else if (value.DidAnyCommandRan())
         {
 
-            _log("Some images were processed with ptexconv. Please check the log for details.");
+            _log.Error("Some images were processed with ptexconv. Please check the log for details.");
         }
         else
         {
-            _log("Unexpected result from ptexconv processing. Please check the log for details.");
+            _log.Error("Unexpected result from ptexconv processing. Please check the log for details.");
         }
     }
 

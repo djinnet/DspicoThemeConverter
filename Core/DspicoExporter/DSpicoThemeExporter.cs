@@ -3,6 +3,7 @@ using DspicoThemeForms.Core.Enums;
 using DspicoThemeForms.Core.Helper;
 using DspicoThemeForms.Core.Runners;
 using DspicoThemeForms.Core.ThemeNormalizationLayer;
+using Serilog;
 
 namespace DspicoThemeForms.Core.DspicoExporter;
 
@@ -18,7 +19,6 @@ public sealed class DSpicoThemeExporter
 {
     private readonly PtexConvRunner _ptexConvRunner;
     private readonly string _outputPath;
-    private readonly Action<string> _log;
 
     private readonly System.Text.Json.JsonSerializerOptions _options = new()
     {
@@ -34,12 +34,12 @@ public sealed class DSpicoThemeExporter
     /// <param name="outputPath">The file system path where exported files will be saved. Must be a valid, accessible directory.</param>
     /// <param name="ptexConvPath">The file system path to the Ptex conversion executable. Must reference a valid executable file.</param>
     /// <param name="log">A delegate that receives log messages as strings. Used to report progress and errors during export operations.</param>
-    public DSpicoThemeExporter(string outputPath, string ptexConvPath, Action<string> log)
+    public DSpicoThemeExporter(string outputPath, string ptexConvPath)
     {
         _outputPath = outputPath;
-        _log = log;
-        _ptexConvRunner = new PtexConvRunner(ptexConvPath, log);
+        _ptexConvRunner = new PtexConvRunner(ptexConvPath);
     }
+
 
     /// <summary>
     /// Exports the specified theme to the designated output path, processing images and generating necessary files.
@@ -52,17 +52,19 @@ public sealed class DSpicoThemeExporter
     /// <returns>true if the export operation is successful; otherwise, false.</returns>
     public bool Export(NormalizedTheme theme, bool overwrittenallow)
     {
+        var _log = Serilog.Log.Logger;
         try
         {
+
             if (theme == null)
             {
-                _log("Error: Theme is null.");
+                _log.Warning("Error: Theme is null.");
                 return false;
             }
 
             if (string.IsNullOrEmpty(_outputPath))
             {
-                _log("Error: Output path is null or empty.");
+                _log.Warning("Error: Output path is null or empty.");
                 return false;
             }
 
@@ -72,7 +74,7 @@ public sealed class DSpicoThemeExporter
 
             if (string.IsNullOrEmpty(themeFolderPath))
             {
-                _log("Error: Failed to create theme folder at destination.");
+                _log.Warning("Error: Failed to create theme folder at destination.");
                 return false;
             }
 
@@ -80,19 +82,19 @@ public sealed class DSpicoThemeExporter
 
             if (!createdJson)
             {
-                _log("Error: Failed to create theme.json.");
+                _log.Warning("Error: Failed to create theme.json.");
                 return false;
             }
 
-            _log("Theme.json created successfully. Starting image processing with PtexConv...");
+            _log.Information("Theme.json created successfully. Starting image processing with PtexConv...");
 
-            ConversionResult value = Run_Ptexconv(theme);
+            ConversionResult value = Run_Ptexconv(theme, _log);
 
             // Log the results of the conversion. If successful, report the results. If not, log the errors.
             if (value.Success)
             {
-                _log(value.Commands.IsAllCommandsPresent(theme));
-                _log("PtexConv processing completed successfully. Reporting results...");
+                _log.Information(value.Commands.IsAllCommandsPresent(theme));
+                _log.Information("PtexConv processing completed successfully. Reporting results...");
                 value.ReportPtexConvResult(_log);
                 return true;
             }
@@ -100,21 +102,21 @@ public sealed class DSpicoThemeExporter
             // If the conversion was not successful, log the errors. If there are no specific errors, log a generic message.
             if (value.HasErrors)
             {
-                _log("PtexConv encountered errors during processing:");
+                _log.Error("PtexConv encountered errors during processing:");
                 foreach (string error in value.Errors)
                 {
-                    _log($"- {error}");
+                    _log.Error($"- {error}");
                 }
             }
             else
             {
-                _log("PtexConv failed to process the images, but no specific errors were reported.");
+                _log.Error("PtexConv failed to process the images, but no specific errors were reported.");
             }
             return false;
         }
         catch (Exception ex)
         {
-            _log($"An error occurred during export: {ex.Message}");
+            _log.Fatal($"An error occurred during export: {ex.Message}");
             return false;
         }
         finally
@@ -124,21 +126,21 @@ public sealed class DSpicoThemeExporter
             bool result = files.RemovedPngFiles(_log);
             if (!result)
             {
-                _log("Failed to remove temporary png files.");
+                _log.Error("Failed to remove temporary png files.");
             }
 
             bool moved = _outputPath.MoveFiles(theme, _log, FilesContants.TexBinFileSuffix, FilesContants.BinFiles, FilesContants.Wildcard_TexBinFiles);
             if (!moved)
             {
-                _log("Failed to move tex files");
+                _log.Error("Failed to move tex files");
             }
 
             bool movedPal = _outputPath.MoveFiles(theme, _log, FilesContants.PalBinFileSuffix, FilesContants.PlttBinFileSuffix, FilesContants.Wildcard_PalBinFiles);
             if (!movedPal)
             {
-                _log("Failed to move pal files");
+                _log.Error("Failed to move pal files");
             }
-            _log("Export complete.");
+            _log.Information("Export complete.");
         }
     }
 
@@ -152,7 +154,7 @@ public sealed class DSpicoThemeExporter
     /// scrims. Cannot be null.</param>
     /// <returns>A ConversionResult that indicates whether the conversion was successful and contains any errors encountered
     /// during processing.</returns>
-    private ConversionResult Run_Ptexconv(NormalizedTheme theme)
+    private ConversionResult Run_Ptexconv(NormalizedTheme theme, ILogger _log)
     {
         ConversionResult conversionResult = new();
         try
@@ -161,7 +163,7 @@ public sealed class DSpicoThemeExporter
             {
                 try
                 {
-                    _log("Saving top background...");
+                    _log.Information("Saving top background...");
                     string topBgPath = theme.TopBackground.SaveTempPng("topbg", _log);
                     PtexConvCommand TopBGcommand = new()
                     {
@@ -170,7 +172,7 @@ public sealed class DSpicoThemeExporter
                         IsTexture = true,
                         TextureFormat = ETextureFormat.Direct,
                     };
-                    _log("Running ptexconv on top background...");
+                    _log.Information("Running ptexconv on top background...");
                     bool topresult = _ptexConvRunner.Run(TopBGcommand.ToString());
                     conversionResult.Commands.Add("topbg", topresult);
                 }
@@ -185,7 +187,7 @@ public sealed class DSpicoThemeExporter
             {
                 try
                 {
-                    _log("Saving bottom background...");
+                    _log.Information("Saving bottom background...");
                     string bottomBgPath = theme.BottomBackground.SaveTempPng("bottombg", _log);
                     PtexConvCommand BottomBGcommand = new()
                     {
@@ -194,7 +196,7 @@ public sealed class DSpicoThemeExporter
                         IsTexture = true,
                         TextureFormat = ETextureFormat.Direct,
                     };
-                    _log("Running ptexconv on bottom background...");
+                    _log.Information("Running ptexconv on bottom background...");
                     bool bottomresult = _ptexConvRunner.Run(BottomBGcommand.ToString());
                     conversionResult.Commands.Add("bottombg", bottomresult);
                 }
@@ -209,7 +211,7 @@ public sealed class DSpicoThemeExporter
             {
                 try
                 {
-                    _log("Saving banner list cell...");
+                    _log.Information("Saving banner list cell...");
                     string bannerListCellPath = theme.BannerListCell.SaveTempPng("bannerListCell", _log);
                     PtexConvCommand BannerListCellCommand = new()
                     {
@@ -218,7 +220,7 @@ public sealed class DSpicoThemeExporter
                         IsTexture = true,
                         TextureFormat = ETextureFormat.A3I5,
                     };
-                    _log("Running ptexconv on banner list cell...");
+                    _log.Information("Running ptexconv on banner list cell...");
                     bool bannerListCellResult = _ptexConvRunner.Run(BannerListCellCommand.ToString());
                     conversionResult.Commands.Add("bannerListCell", bannerListCellResult);
                 }
@@ -233,7 +235,7 @@ public sealed class DSpicoThemeExporter
             {
                 try
                 {
-                    _log("Saving banner list cell selected...");
+                    _log.Information("Saving banner list cell selected...");
                     string bannerListCellSelectedPath = theme.BannerListCellSelected.SaveTempPng("bannerListCellSelected", _log);
                     PtexConvCommand BannerListCellSelectedCommand = new()
                     {
@@ -242,7 +244,7 @@ public sealed class DSpicoThemeExporter
                         IsTexture = true,
                         TextureFormat = ETextureFormat.A3I5,
                     };
-                    _log("Running ptexconv on banner list cell selected...");
+                    _log.Information("Running ptexconv on banner list cell selected...");
                     bool bannerListCellSelectedResult = _ptexConvRunner.Run(BannerListCellSelectedCommand.ToString());
                     conversionResult.Commands.Add("bannerListCellSelected", bannerListCellSelectedResult);
                 }
@@ -258,7 +260,7 @@ public sealed class DSpicoThemeExporter
             {
                 try
                 {
-                    _log("Saving grid cell...");
+                    _log.Information("Saving grid cell...");
                     string gridCellPath = theme.GridCell.SaveTempPng("gridCell", _log);
                     PtexConvCommand GridCellCommand = new()
                     {
@@ -267,7 +269,7 @@ public sealed class DSpicoThemeExporter
                         IsTexture = true,
                         TextureFormat = ETextureFormat.A3I5,
                     };
-                    _log("Running ptexconv on grid cell...");
+                    _log.Information("Running ptexconv on grid cell...");
                     bool gridCellResult = _ptexConvRunner.Run(GridCellCommand.ToString());
                     conversionResult.Commands.Add("gridCell", gridCellResult);
                 }
@@ -282,7 +284,7 @@ public sealed class DSpicoThemeExporter
             {
                 try
                 {
-                    _log("Saving grid cell selected...");
+                    _log.Information("Saving grid cell selected...");
                     string gridCellSelectedPath = theme.GridCellSelected.SaveTempPng("gridCellSelected", _log);
                     PtexConvCommand GridCellSelectedCommand = new()
                     {
@@ -291,7 +293,7 @@ public sealed class DSpicoThemeExporter
                         IsTexture = true,
                         TextureFormat = ETextureFormat.A3I5,
                     };
-                    _log("Running ptexconv on grid cell selected...");
+                    _log.Information("Running ptexconv on grid cell selected...");
                     bool gridCellSelectedResult = _ptexConvRunner.Run(GridCellSelectedCommand.ToString());
                     conversionResult.Commands.Add("gridCellSelected", gridCellSelectedResult);
                 }
@@ -306,7 +308,7 @@ public sealed class DSpicoThemeExporter
             {
                 try
                 {
-                    _log("Saving scrim...");
+                    _log.Information("Saving scrim...");
                     string scrimPath = theme.Scrim.SaveTempPng("scrim", _log);
                     PtexConvCommand ScrimCommand = new()
                     {
@@ -315,7 +317,7 @@ public sealed class DSpicoThemeExporter
                         IsTexture = true,
                         TextureFormat = ETextureFormat.A5I3,
                     };
-                    _log("Running ptexconv on scrim...");
+                    _log.Information("Running ptexconv on scrim...");
                     bool scrimResult = _ptexConvRunner.Run(ScrimCommand.ToString());
                     conversionResult.Commands.Add("scrim", scrimResult);
                 }
@@ -333,7 +335,7 @@ public sealed class DSpicoThemeExporter
         }
         catch (Exception ex)
         {
-            _log($"An error occurred while running ptexconv: {ex.Message}");
+            _log.Error($"An error occurred while running ptexconv: {ex.Message}");
             conversionResult.Errors.Add($"An error occurred while running ptexconv: {ex.Message}");
             conversionResult.Success = false;
             return conversionResult;

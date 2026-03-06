@@ -55,7 +55,7 @@ namespace DspicoThemeForms
             picBannerSelected = new PictureBox();
             tabScrim = new TabPage();
             picScrim = new PictureBox();
-            txtLog = new TextBox();
+            txtLog = new RichTextBox();
             groupBoxTheme = new GroupBox();
             colorpreviewpanel = new Panel();
             btnColorPicker = new Button();
@@ -337,12 +337,12 @@ namespace DspicoThemeForms
             // txtLog
             // 
             txtLog.Location = new Point(12, 546);
-            txtLog.Multiline = true;
             txtLog.Name = "txtLog";
             txtLog.ReadOnly = true;
-            txtLog.ScrollBars = ScrollBars.Vertical;
+            txtLog.ScrollBars = RichTextBoxScrollBars.Vertical;
             txtLog.Size = new Size(933, 151);
             txtLog.TabIndex = 10;
+            txtLog.Text = "";
             // 
             // groupBoxTheme
             // 
@@ -581,7 +581,7 @@ namespace DspicoThemeForms
         private System.Windows.Forms.PictureBox picGrid;
         private System.Windows.Forms.PictureBox picBanner;
 
-        private System.Windows.Forms.TextBox txtLog;
+        private RichTextBox txtLog;
         private TabPage tabScrim;
         private PictureBox picScrim;
         private TabPage tabGridSelected;

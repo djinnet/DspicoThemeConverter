@@ -1,9 +1,12 @@
 ﻿using DspicoThemeForms.Core.DspicoExporter;
 using DspicoThemeForms.Core.Enums;
 using DspicoThemeForms.Core.Helper;
+using DspicoThemeForms.Core.Logging;
 using DspicoThemeForms.Core.ThemeImporters;
 using DspicoThemeForms.Core.ThemeNormalizationLayer;
 using OkieDan.Forms.DarkModeCore;
+using Serilog;
+using Serilog.Events;
 using System.Drawing.Drawing2D;
 
 namespace DspicoThemeForms
@@ -14,15 +17,18 @@ namespace DspicoThemeForms
         private DarkModeCS dm;
         private bool _isDarkMode;
 
+
         public Main(IDarkModeFactory darkModeFactory)
         {
             InitializeComponent();
+            LoggerSetup.Initialize(txtLog);
             dm = darkModeFactory.Create(this);
             dm.ColorMode = DarkModeCS.DisplayMode.DarkMode;
             _isDarkMode = dm.isDarkMode();
             chkDarkMode.Checked = _isDarkMode;
             InitializeUIState();
             WireEvents();
+            AppendLog("Application started");
         }
 
         private void InitializeUIState()
@@ -107,11 +113,7 @@ namespace DspicoThemeForms
                 // Run the export process in a background task to keep the UI responsive
                 await Task.Run(() =>
                 {
-                    DSpicoThemeExporter exporter = new(
-                        txtOutputPath.Text,
-                        ptexConvPath,
-                        AppendLogSafe
-                    );
+                    DSpicoThemeExporter exporter = new(txtOutputPath.Text, ptexConvPath);
 
                     exporter.Export(theme: normalizedTheme, overwriteAllowed);
                 });
@@ -121,7 +123,7 @@ namespace DspicoThemeForms
             }
             catch (Exception ex)
             {
-                AppendLog(ex.ToString());
+                AppendLog(ex.ToString(), LogEventLevel.Error);
                 MessageBox.Show(ex.Message, "Conversion failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
@@ -221,7 +223,7 @@ namespace DspicoThemeForms
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Theme load failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                AppendLog(ex.ToString());
+                AppendLog(ex.ToString(), LogEventLevel.Error);
                 txtSourcePath.Text = string.Empty;
             }
         }
@@ -260,20 +262,10 @@ namespace DspicoThemeForms
             btnConvert.Enabled = _currentTheme != null && Directory.Exists(txtOutputPath.Text);
         }
 
-        private void AppendLog(string text)
+        private void AppendLog(string text, LogEventLevel level = LogEventLevel.Information)
         {
-            txtLog.AppendText($"[{DateTime.Now:HH:mm:ss}] {text}{Environment.NewLine}");
-        }
-
-        private void AppendLogSafe(string text)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new Action<string>(AppendLog), text);
-                return;
-            }
-
-            AppendLog(text);
+            Log.Write(level, text);
+            //txtLog.AppendText($"[{DateTime.Now:HH:mm:ss}] {text}{Environment.NewLine}");
         }
 
         private void Picturebox_Paint(object sender, PaintEventArgs e)

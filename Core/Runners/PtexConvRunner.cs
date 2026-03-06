@@ -1,5 +1,6 @@
 ﻿using DspicoThemeForms.Core.Constants;
 using DspicoThemeForms.Core.Helper;
+using Serilog;
 using System.Diagnostics;
 
 namespace DspicoThemeForms.Core.Runners;
@@ -14,15 +15,13 @@ namespace DspicoThemeForms.Core.Runners;
 public sealed class PtexConvRunner
 {
     private string PtexConvPath { get; }
-    private Action<string> Log { get; }
 
-    public PtexConvRunner(string ptexConvPath, Action<string> log)
+    public PtexConvRunner(string ptexConvPath)
     {
         if (!File.Exists(ptexConvPath))
             throw new FileNotFoundException("ptexconv executable not found at the specified path.", ptexConvPath);
 
         PtexConvPath = ptexConvPath;
-        Log = log;
     }
 
     /// <summary>
@@ -41,18 +40,18 @@ public sealed class PtexConvRunner
         {
             if (string.IsNullOrEmpty(arguments))
             {
-                Log("No arguments provided for ptexconv.");
+                Log.Warning("No arguments provided for ptexconv.");
                 return false;
             }
 
             string toolsDir = PathHelper.GetToolsDirectory();
             if (string.IsNullOrEmpty(toolsDir))
             {
-                Log("Tools directory not found.");
+                Log.Warning("Tools directory not found.");
                 return false;
             }
 
-            Log("Running ptexconv with arguments: " + arguments);
+            Log.Information("Running ptexconv with arguments: " + arguments);
             ProcessStartInfo psi = new()
             {
                 FileName = FilesContants.CmdExeName,
@@ -69,7 +68,7 @@ public sealed class PtexConvRunner
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    Log(e.Data);
+                    Log.Information(e.Data);
                 }
             };
 
@@ -77,7 +76,7 @@ public sealed class PtexConvRunner
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    Log("ERROR:" + e.Data);
+                    Log.Error("ERROR:" + e.Data);
                     HasError = true;
                 }
             };
@@ -97,7 +96,7 @@ public sealed class PtexConvRunner
         }
         catch (Exception ex)
         {
-            Log("Exception while running ptexconv: " + ex.Message);
+            Log.Error("Exception while running ptexconv: " + ex.Message);
             return false;
         }
     }
