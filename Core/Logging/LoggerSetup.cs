@@ -8,7 +8,7 @@ public static class LoggerSetup
     {
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Verbose()
-            .WriteTo.RichTextBox(logbox, outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u4}] {Message:lj}{NewLine}{Exception}")
+            .WriteTo.RichTextBox(logbox, outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u5}] {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
     }
 }

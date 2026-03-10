@@ -50,6 +50,60 @@ public static class ToolsDirHelper
     }
 
     /// <summary>
+    /// Saves the specified Bitmap as a temporary PNG file in the tools directory and returns the full path to the saved
+    /// file.
+    /// </summary>
+    /// <remarks>If a file with the specified name already exists in the tools directory, it will be
+    /// overwritten. Ensure that the tools directory is properly configured before calling this method.</remarks>
+    /// <param name="binbytes">The Bitmap image to be saved as a PNG file. This parameter must not be null.</param>
+    /// <param name="name">The name to use for the temporary PNG file, without the extension. This parameter must not be null or empty.</param>
+    /// <param name="_log">An action delegate used to log messages, including errors and warnings that occur during the save process.</param>
+    /// <returns>The full path to the saved PNG file. Returns an empty string if the save operation fails due to invalid
+    /// parameters or configuration.</returns>
+    public static string SaveBytesAsBinInThemeFolder(this byte[] binbytes, string themefolderpath, string name, ILogger _log)
+    {
+        if (binbytes == null)
+        {
+            _log.Warning($"Error: bytes for {name} is null.");
+            return string.Empty;
+        }
+
+        if (string.IsNullOrEmpty(name))
+        {
+            _log.Warning("Error: Name for temporary PNG file is null or empty.");
+            return string.Empty;
+        }
+
+        if (string.IsNullOrEmpty(themefolderpath))
+        {
+            _log.Warning("Error: Theme folder directory path is null or empty.");
+            return string.Empty;
+        }
+
+        string path = Path.Combine(themefolderpath, $"{name}.bin");
+
+        if (File.Exists(path))
+        {
+            _log.Warning($"Warning: Temporary file {name}.bin already exists and will be overwritten.");
+        }
+
+        //use binarywriter to write the bytes to the file
+        try
+        {
+            using var stream = File.Open(path, FileMode.Create);
+            using var writer = new BinaryWriter(stream);
+            writer.Write(binbytes);
+        }
+        catch (Exception)
+        {
+            _log.Error($"Error saving bytes as bin file: {name}.bin");
+            return string.Empty;
+        }
+
+        return path;
+    }
+
+    /// <summary>
     /// Deletes PNG files from the tools directory that match the specified file names.
     /// </summary>
     /// <remarks>If the names array is null or empty, or if the tools directory path is invalid, the method

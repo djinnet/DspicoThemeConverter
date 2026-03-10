@@ -1,4 +1,5 @@
-﻿using DspicoThemeForms.Core.DspicoExporter;
+﻿using DspicoThemeForms.Core.Converters;
+using DspicoThemeForms.Core.DspicoExporter;
 using DspicoThemeForms.Core.Enums;
 using DspicoThemeForms.Core.Helper;
 using DspicoThemeForms.Core.Logging;
@@ -39,6 +40,19 @@ namespace DspicoThemeForms
             cmbThemeType.ValueMember = "Value";
             cmbThemeType.SelectedIndex = 0;
             btnConvert.Enabled = false;
+            testCheckbox.Visible = IsDebugRelease;
+        }
+
+        public static bool IsDebugRelease
+        {
+            get
+            {
+#if DEBUG
+                return true;
+#else
+            return false;
+#endif
+            }
         }
 
         private void WireEvents()
@@ -56,67 +70,17 @@ namespace DspicoThemeForms
 
             try
             {
-                if (_currentTheme == null)
+                if (testCheckbox.Checked)
                 {
-                    throw new Exception("No theme loaded. Please select a valid source theme folder.");
-                }
-
-                string ptexConvPath = PathHelper.GetPtexConvPath();
-                if (string.IsNullOrEmpty(ptexConvPath))
-                {
-                    throw new Exception("PtexConv tool not found. Please ensure it is placed in the correct tools directory.");
-                }
-
-                //check if metadata is allowed to be overwritten, if not then we need to preserve the original metadata by copying it from the current theme to a new instance of NormalizedTheme that we will pass to the exporter. This is necessary because the exporter will modify the metadata fields of the theme, and if we do not want that then we need to create a copy of the theme with the original metadata values before passing it to the exporter.
-                NormalizedTheme normalizedTheme;
-                bool overwriteAllowed = chkAllowedOverwrite.Checked;
-
-                if (chkAllowedOverwrite.Checked)
-                {
-                    EThemeType originThemeType = EThemeType.None;
-                    if (Enum.TryParse(txtThemeOrigin.Text, out EThemeType parsedOrigin))
-                    {
-                        originThemeType = parsedOrigin;
-                    }
-
-                    var selectedcolor = colorpreviewpanel.BackColor;
-                    //update the current theme's metadata with the values from the textboxes, since we are allowed to overwrite the metadata
-                    normalizedTheme = new NormalizedTheme()
-                    {
-                        Name = txtThemeName.Text,
-                        Description = txtThemeDesc.Text,
-                        Author = txtThemeAuthor.Text,
-                        ThemeVersion = txtVersion.Text,
-                        OriginTheme = originThemeType,
-                        DarkTheme = chkDarkTheme.Checked,
-                        PrimaryColor = selectedcolor,
-                        BackgroundMusicThemes = Array.Empty<BackgroundMusicTheme>().ToList(),
-                        TopBackground = _currentTheme.TopBackground,
-                        BottomBackground = _currentTheme.BottomBackground,
-                        GridCell = _currentTheme.GridCell,
-                        GridCellPltt = _currentTheme.GridCellPltt,
-                        BannerListCell = _currentTheme.BannerListCell,
-                        BannerListCellPltt = _currentTheme.BannerListCellPltt,
-                        BannerListCellSelected = _currentTheme.BannerListCellSelected,
-                        BannerListCellSelectedPltt = _currentTheme.BannerListCellSelectedPltt,
-                        GridCellSelected = _currentTheme.GridCellSelected,
-                        GridCellPlttSelected = _currentTheme.GridCellPlttSelected,
-                        Scrim = _currentTheme.Scrim,
-                        ScrimPltt = _currentTheme.ScrimPltt
-                    };
+                    AppendLog("Test mode enabled - Running NDS conversion test");
+                    await TestNdsConversion();
                 }
                 else
                 {
-                    normalizedTheme = _currentTheme;
+                    AppendLog("Exporting theme using PtexConv...");
+                    await ExportThemeByPtexconv();
                 }
-
-                // Run the export process in a background task to keep the UI responsive
-                await Task.Run(() =>
-                {
-                    DSpicoThemeExporter exporter = new(txtOutputPath.Text, ptexConvPath);
-
-                    exporter.Export(theme: normalizedTheme, overwriteAllowed);
-                });
+                
 
                 AppendLog("Conversion completed successfully");
                 MessageBox.Show("Theme converted successfully!", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -130,6 +94,129 @@ namespace DspicoThemeForms
             {
                 btnConvert.Enabled = true;
             }
+        }
+
+        private async Task TestNdsConversion()
+        {
+            if(_currentTheme == null)
+            {
+                throw new Exception("No theme loaded. Please select a valid source theme folder.");
+            }
+
+            string ptexConvPath = PathHelper.GetPtexConvPath();
+            if (string.IsNullOrEmpty(ptexConvPath))
+            {
+                throw new Exception("PtexConv tool not found. Please ensure it is placed in the correct tools directory.");
+            }
+
+            NormalizedTheme normalizedTheme;
+            bool overwriteAllowed = chkAllowedOverwrite.Checked;
+
+            if (overwriteAllowed)
+            {
+                EThemeType originThemeType = EThemeType.None;
+                if (Enum.TryParse(txtThemeOrigin.Text, out EThemeType parsedOrigin))
+                {
+                    originThemeType = parsedOrigin;
+                }
+
+                var selectedcolor = colorpreviewpanel.BackColor;
+                //update the current theme's metadata with the values from the textboxes, since we are allowed to overwrite the metadata
+                normalizedTheme = new NormalizedTheme()
+                {
+                    Name = txtThemeName.Text,
+                    Description = txtThemeDesc.Text,
+                    Author = txtThemeAuthor.Text,
+                    ThemeVersion = txtVersion.Text,
+                    OriginTheme = originThemeType,
+                    DarkTheme = chkDarkTheme.Checked,
+                    PrimaryColor = selectedcolor,
+                    BackgroundMusicThemes = Array.Empty<BackgroundMusicTheme>().ToList(),
+                    TopBackground = _currentTheme.TopBackground,
+                    BottomBackground = _currentTheme.BottomBackground,
+                    GridCell = _currentTheme.GridCell,
+                    GridCellPltt = _currentTheme.GridCellPltt,
+                    BannerListCell = _currentTheme.BannerListCell,
+                    BannerListCellPltt = _currentTheme.BannerListCellPltt,
+                    BannerListCellSelected = _currentTheme.BannerListCellSelected,
+                    BannerListCellSelectedPltt = _currentTheme.BannerListCellSelectedPltt,
+                    GridCellSelected = _currentTheme.GridCellSelected,
+                    GridCellPlttSelected = _currentTheme.GridCellPlttSelected,
+                    Scrim = _currentTheme.Scrim,
+                    ScrimPltt = _currentTheme.ScrimPltt
+                };
+            }
+            else
+            {
+                normalizedTheme = _currentTheme;
+            }
+            NDSConversionExporter exporter = new ();
+            await exporter.Export(txtOutputPath.Text, normalizedTheme ?? throw new Exception("No theme loaded for conversion."), overwriteAllowed);
+        }
+
+        private async Task ExportThemeByPtexconv()
+        {
+            if (_currentTheme == null)
+            {
+                throw new Exception("No theme loaded. Please select a valid source theme folder.");
+            }
+
+            string ptexConvPath = PathHelper.GetPtexConvPath();
+            if (string.IsNullOrEmpty(ptexConvPath))
+            {
+                throw new Exception("PtexConv tool not found. Please ensure it is placed in the correct tools directory.");
+            }
+
+            //check if metadata is allowed to be overwritten, if not then we need to preserve the original metadata by copying it from the current theme to a new instance of NormalizedTheme that we will pass to the exporter. This is necessary because the exporter will modify the metadata fields of the theme, and if we do not want that then we need to create a copy of the theme with the original metadata values before passing it to the exporter.
+            NormalizedTheme normalizedTheme;
+            bool overwriteAllowed = chkAllowedOverwrite.Checked;
+
+            if (chkAllowedOverwrite.Checked)
+            {
+                EThemeType originThemeType = EThemeType.None;
+                if (Enum.TryParse(txtThemeOrigin.Text, out EThemeType parsedOrigin))
+                {
+                    originThemeType = parsedOrigin;
+                }
+
+                var selectedcolor = colorpreviewpanel.BackColor;
+                //update the current theme's metadata with the values from the textboxes, since we are allowed to overwrite the metadata
+                normalizedTheme = new NormalizedTheme()
+                {
+                    Name = txtThemeName.Text,
+                    Description = txtThemeDesc.Text,
+                    Author = txtThemeAuthor.Text,
+                    ThemeVersion = txtVersion.Text,
+                    OriginTheme = originThemeType,
+                    DarkTheme = chkDarkTheme.Checked,
+                    PrimaryColor = selectedcolor,
+                    BackgroundMusicThemes = Array.Empty<BackgroundMusicTheme>().ToList(),
+                    TopBackground = _currentTheme.TopBackground,
+                    BottomBackground = _currentTheme.BottomBackground,
+                    GridCell = _currentTheme.GridCell,
+                    GridCellPltt = _currentTheme.GridCellPltt,
+                    BannerListCell = _currentTheme.BannerListCell,
+                    BannerListCellPltt = _currentTheme.BannerListCellPltt,
+                    BannerListCellSelected = _currentTheme.BannerListCellSelected,
+                    BannerListCellSelectedPltt = _currentTheme.BannerListCellSelectedPltt,
+                    GridCellSelected = _currentTheme.GridCellSelected,
+                    GridCellPlttSelected = _currentTheme.GridCellPlttSelected,
+                    Scrim = _currentTheme.Scrim,
+                    ScrimPltt = _currentTheme.ScrimPltt
+                };
+            }
+            else
+            {
+                normalizedTheme = _currentTheme;
+            }
+
+            // Run the export process in a background task to keep the UI responsive
+            await Task.Run(() =>
+            {
+                DSpicoThemeExporter exporter = new(txtOutputPath.Text, ptexConvPath);
+
+                exporter.Export(theme: normalizedTheme, overwriteAllowed);
+            });
         }
 
         private void BtnBrowseOutput_Click(object? sender, EventArgs e)

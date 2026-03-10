@@ -1,7 +1,7 @@
 ﻿# DSpico Launcher Theme Converter
 This project is a Windows-only supported tool to convert themes to the DSpico Theme format, a open-source launcher for the Nintendo DS. This tool is still in development and may not work perfectly for all themes.
 
-It allows users to convert themes from various themes launcher to the theme for DSpico launcher. 
+The tool allows users to convert themes from various themes launcher to the theme for DSpico launcher. 
 
 
 However it is important to note that the tool may not be able to convert all themes perfectly, as some themes may have unique features or design elements that may not be compatible with the DSpico Theme format.
@@ -69,7 +69,7 @@ The tool is still in development and may not support all themes perfectly, but i
 | AKMenu                   	|           Yes           	|    Yes (custom.ini)    	|           Yes           	| Needed testing but only top and bottom bg supported 	|
 | Moonshell                	|           Yes           	|           No           	|            No           	|                   Work In Progress                  	|
 | TwiLight Menu            	|           Yes           	|           No           	|            No           	|                   Work In Progress                  	|
-| DSpico unexported themes 	|           Yes           	|   Yes (metadata.ini)   	|           Yes           	|   Needed testing, but should supported all images   	|
+| DSpico unexported themes 	|           Yes           	|   Yes (metadata.ini)   	|           Yes           	|				  Supported all images				   	|
 
 
 Other themes may be supported as well, but it is not guaranteed that the tool will be able to convert them perfectly, as some themes may have unique features or design elements that may not be compatible with the DSpico Theme format.
@@ -78,6 +78,19 @@ At that point, it is better to create an issue in the repository for the new the
 
 Some themes may need to manually prepare the source theme before conversion, such as adding a metadata.ini file with the correct metadata info, or adjusting the theme structure to be compatible with the DSpico Theme format.
 
+
+# Testing features:
+For development branches, there exists an checkbox in the UI to enable the testing features, which may include features that are not fully implemented or may cause issues during conversion.
+The currently implemented testing features are:
+* NDS conversion. This feature allows us to convert directly without using ptexconv tool, and has been testing in MelonDS, but it is not guaranteed that it will works the same with the ptexconv tool.
+
+Always ensure to remove the checkbox in UI before merging the development branch to the main branch.
+
+# Logging:
+The logging framework is built on top of the Serilog library, which provides a simple and flexible way to log messages in the application. 
+The framework sent the log messages to the UI in real-time, allowing users to see the progress of the conversion process and any errors that may occur.
+
+If needed, the system can expand to save logs into a file for later review, but currently the logs are only displayed in the UI and not saved to a file.
 
 # Images of the program:
 ![Image of the program in darkmode](/GithubImages/darkmode.png)
@@ -106,3 +119,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 * Kernel Themes for providing the themes of YSMenu, AKMenu and Moonshell, so I can test the themes and analyze the file formats and the texture formats. (https://themes.flashcarts.net/)
 * TwiLight Menu++ for providing the themes of TWiLight Menu themes, so I can test the themes and analyze the file formats and the texture formats. (https://skins.ds-homebrew.com/)
 * ChatGPT + Co-pilot has been partially helpful in generating code snippets and providing suggestions during the development process. But the majority of the code and the logic of the program has been implemented by the developer.
+* Santiagovalencia for basic foundation of the NDS Conversion code - only for the BitmapTo15Bpp function for the encoding. The rest (A3I5 and A5I3) has been implemented by Djinnet using the same structure as the function.

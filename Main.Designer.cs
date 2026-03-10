@@ -73,6 +73,7 @@ namespace DspicoThemeForms
             txtThemeOrigin = new TextBox();
             chkAllowedOverwrite = new CheckBox();
             chkDarkMode = new CheckBox();
+            testCheckbox = new CheckBox();
             tabPreview.SuspendLayout();
             tabTop.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)picTop).BeginInit();
@@ -510,11 +511,22 @@ namespace DspicoThemeForms
             chkDarkMode.UseVisualStyleBackColor = true;
             chkDarkMode.CheckedChanged += chkDarkMode_CheckedChanged;
             // 
+            // testCheckbox
+            // 
+            testCheckbox.AutoSize = true;
+            testCheckbox.Location = new Point(743, 508);
+            testCheckbox.Name = "testCheckbox";
+            testCheckbox.Size = new Size(179, 19);
+            testCheckbox.TabIndex = 14;
+            testCheckbox.Text = "Test feature: NDS Conversion";
+            testCheckbox.UseVisualStyleBackColor = true;
+            // 
             // Main
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(954, 709);
+            Controls.Add(testCheckbox);
             Controls.Add(chkDarkMode);
             Controls.Add(chkAllowedOverwrite);
             Controls.Add(lblSource);
@@ -605,5 +617,6 @@ namespace DspicoThemeForms
         private TextBox txtVersion;
         private Panel colorpreviewpanel;
         private Button btnColorPicker;
+        private CheckBox testCheckbox;
     }
 }
